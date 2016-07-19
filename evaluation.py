@@ -1,0 +1,74 @@
+from mention import Mention
+from itertools import izip
+
+
+def evaluate(gold_edl_file, sys_edl_file, fn_file, fp_file, require_type_match=True):
+    gold_mentions = Mention.load_edl_file(gold_edl_file, arrange_by_docid=True)
+    sys_mentions = Mention.load_edl_file(sys_edl_file, arrange_by_docid=True)
+
+    fout_fn = open(fn_file, 'wb')
+    fout_fp = open(fp_file, 'wb')
+    sys_cnt, gold_cnt, hit_cnt = 0, 0, 0
+    for docid, sys_mentions in sys_mentions.iteritems():
+        sys_cnt += len(sys_mentions)
+
+        all_gold_mentions_in_doc = gold_mentions.get(docid, list())
+        # nam_gold_mentions = [m for m in all_gold_mentions_in_doc if m.mention_type == 'NAM']
+        nam_gold_mentions = all_gold_mentions_in_doc
+        gold_hit_tags = [False] * len(nam_gold_mentions)
+        gold_cnt += len(nam_gold_mentions)
+
+        for sm in sys_mentions:
+            hit = False
+            for i, gm in enumerate(nam_gold_mentions):
+                type_hit = True
+                if require_type_match:
+                    type_hit = sm.entity_type == gm.entity_type
+                if sm.beg_pos == gm.beg_pos and sm.end_pos == gm.end_pos and type_hit:
+                    hit = True
+                    hit_cnt += 1
+                    gold_hit_tags[i] = True
+                    break
+
+            if not hit:
+                fout_fp.write('%s\t%s\t%d\t%d\n' % (sm.name.encode('utf-8'), docid, sm.beg_pos, sm.end_pos))
+        # break
+
+        for gm, hit in izip(nam_gold_mentions, gold_hit_tags):
+            if not hit:
+                fout_fn.write('%s\t%s\t%d\t%d\n' % (gm.name.encode('utf-8'), docid, gm.beg_pos, gm.end_pos))
+
+    fout_fn.close()
+    fout_fp.close()
+
+    print '#hit: %d, #sys: %d, #gold: %d' % (hit_cnt, sys_cnt, gold_cnt)
+    hit_cnt = float(hit_cnt)
+    prec = hit_cnt / sys_cnt
+    recall = hit_cnt / gold_cnt
+    f1 = 2 * prec * recall / (prec + recall)
+    print 'prec: %f, recall: %f, f1: %f' % (prec, recall, f1)
+
+
+def main():
+    dataset = 103
+    require_type_match = True
+
+    if dataset == 75:
+        gold_edl_file = 'e:/el/LDC2015E75/data/tac_kbp_2015_tedl_training_gold_fixed.tab'
+        sys_edl_file = 'e:/el/LDC2015E75/data/all-mentions-tac-linked.txt'
+        # sys_edl_file = 'e:/el/LDC2015E75/data/all-mentions-tac-linked-type.txt'
+        false_pos_file = 'e:/el/LDC2015E75/data/fp.txt'
+        false_neg_file = 'e:/el/LDC2015E75/data/fn.txt'
+    else:
+        gold_edl_file = 'e:/el/LDC2015E103/data/tac_kbp_2015_tedl_evaluation_gold_standard_entity_mentions.tab'
+        # sys_edl_file = 'e:/el/LDC2015E103/data/ner-result.txt'
+        sys_edl_file = 'e:/el/LDC2015E103/data/all-mentions-tac.txt'
+        sys_edl_file = 'e:/el/LDC2015E103/data/all-mentions-tac-linked-type.txt'
+        false_pos_file = 'e:/el/LDC2015E103/data/fp.txt'
+        false_neg_file = 'e:/el/LDC2015E103/data/fn.txt'
+
+    evaluate(gold_edl_file, sys_edl_file, false_neg_file, false_pos_file, require_type_match)
+
+
+if __name__ == '__main__':
+    main()
