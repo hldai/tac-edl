@@ -89,7 +89,7 @@ def __mention_exist(mention, mentions):
 def __write_mentions(mentions, fout):
     for m in mentions:
         fout.write('%s\t%s\t%d\t%d\t%s\t%s\n' % (m.name.encode('utf-8'), m.docid, m.beg_pos, m.end_pos,
-                                                 m.entity_type, m.mention_type))
+                                                    m.entity_type, m.mention_type))
 
 
 def arrange_ner_result(doc_text_file, ner_result_files, dst_tac_edl_file):
@@ -123,17 +123,18 @@ def arrange_ner_result(doc_text_file, ner_result_files, dst_tac_edl_file):
 
 
 def main():
-    dataset = 103
+    dataset = 75
+    datadir = '/home/dhl/data/EDL/'
     if dataset == 75:
-        doc_text_file = 'e:/el/LDC2015E75/data/doc-text.txt'
-        ner_result_file0 = 'e:/el/LDC2015E75/data/ner-result0.txt'
-        ner_result_file1 = 'e:/el/LDC2015E75/data/ner-result1.txt'
-        dst_mention_file = 'e:/el/LDC2015E75/data/ner-mentions.txt'
+        doc_text_file = datadir + 'LDC2015E75/data/doc-text.txt'
+        ner_result_file0 = datadir + 'LDC2015E75/data/ner-result0.txt'
+        ner_result_file1 = datadir + 'LDC2015E75/data/ner-result1.txt'
+        dst_mention_file = datadir + 'LDC2015E75/data/ner-mentions.txt'
     else:
-        doc_text_file = 'e:/el/LDC2015E103/data/doc-text.txt'
-        ner_result_file0 = 'e:/el/LDC2015E103/data/ner-result0.txt'
-        ner_result_file1 = 'e:/el/LDC2015E103/data/ner-result1.txt'
-        dst_mention_file = 'e:/el/LDC2015E103/data/ner-mentions.txt'
+        doc_text_file = datadir + 'LDC2015E103/data/doc-text.txt'
+        ner_result_file0 = datadir + 'LDC2015E103/data/ner-result0.txt'
+        ner_result_file1 = datadir + 'LDC2015E103/data/ner-result1.txt'
+        dst_mention_file = datadir + 'LDC2015E103/data/ner-mentions.txt'
 
     arrange_ner_result(doc_text_file, [ner_result_file0, ner_result_file1], dst_mention_file)
 

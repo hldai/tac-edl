@@ -57,6 +57,7 @@ def __extract_post_author_mentions(doc_list_file, text_file, dst_post_authors_fi
         doc_file.close()
 
         docid = doc_id_from_path(doc_path)
+        # print docid, docid_text, doc_path
 
         assert docid_text == docid
 
@@ -76,30 +77,32 @@ def __extract_post_author_mentions(doc_list_file, text_file, dst_post_authors_fi
 
 
 def __match_names_by_words(names, words):
-    hit_spans = list()
+    hit_spans, hit_indices = list(), list()
     num_words = len(words)
     for i in xrange(num_words):
-        for name in names:
+        for j, name in enumerate(names):
             num_words_in_name = len(name)
             if i + num_words_in_name > num_words:
                 continue
 
             hit = True
-            for j in xrange(num_words_in_name):
-                if name[j] != words[i + j]:
+            for k in xrange(num_words_in_name):
+                if name[k] != words[i + k]:
                     hit = False
                     break
 
             if hit:
                 hit_spans.append((i, i + num_words_in_name))
-    return hit_spans
+                hit_indices.append(j)
+    return hit_spans, hit_indices
 
 
 def __load_name_dict(name_dict_file):
-    names = set()
+    names = dict()
     f = open(name_dict_file, 'r')
     for line in f:
-        names.add(line[:-1].decode('utf-8'))
+        vals = line.rstrip().split('\t')
+        names[vals[0].decode('utf-8')] = vals[1]
     f.close()
     return names
 
@@ -112,8 +115,9 @@ def __tokenize_names(names_set):
 
 
 def __extract_name_dict_mentions(name_dict_file, text_file, words_file, dst_adj_gpe_mentions_file):
-    names = __load_name_dict(name_dict_file)
-    names = __tokenize_names(names)
+    names_dict = __load_name_dict(name_dict_file)
+    entity_types = names_dict.values()
+    names = __tokenize_names(names_dict.keys())
 
     fin0 = open(text_file, 'r')
     fin1 = open(words_file, 'r')
@@ -130,13 +134,13 @@ def __extract_name_dict_mentions(name_dict_file, text_file, words_file, dst_adj_
             words, tags = next_ner_result(fin1)
 
             pos_spans = match_raw_text(text_new, words)
-            hit_idx_spans = __match_names_by_words(names, words)
+            hit_idx_spans, name_indices = __match_names_by_words(names, words)
 
-            for hit_idx_span in hit_idx_spans:
+            for hit_idx_span, name_idx in izip(hit_idx_spans, name_indices):
                 beg_pos, end_pos = pos_spans[hit_idx_span[0]][0], pos_spans[hit_idx_span[1] - 1][1]
                 name = text[beg_pos:end_pos].replace('\n', ' ')
-                fout.write('%s\t%s\t%d\t%d\tGPE\tNAM\n' % (name.encode('utf-8'), docid, beg_pos + span[0],
-                                                           end_pos + span[0] - 1))
+                fout.write('%s\t%s\t%d\t%d\t%s\tNAM\n' % (name.encode('utf-8'), docid, beg_pos + span[0],
+                                                          end_pos + span[0] - 1, entity_types[name_idx]))
     fin0.close()
     fin1.close()
     fout.close()
@@ -225,33 +229,34 @@ def __mention_expand(text_file, mention_file, dst_extra_mentions_file):
 
 def main():
     dataset = 103
+    datadir = '/home/dhl/data/EDL/'
 
     if dataset == 75:
-        doc_list_file = 'e:/el/LDC2015E75/data/eng-docs-list.txt'
-        text_file = 'e:/el/LDC2015E75/data/doc-text.txt'
-        words_file = 'e:/el/LDC2015E75/data/ner-result1.txt'
-        ner_mentions_file = 'e:/el/LDC2015E75/data/ner-mentions.txt'
-        dst_post_authors_file = 'e:/el/LDC2015E75/data/post-authors.txt'
-        dst_name_dict_mentions_file = 'e:/el/LDC2015E75/data/name-dict-mentions.txt'
-        dst_extra_mentions_file = 'e:/el/LDC2015E75/data/ner-expanded.txt'
+        doc_list_file = datadir + 'LDC2015E75/data/eng-docs-list.txt'
+        text_file = datadir + 'LDC2015E75/data/doc-text.txt'
+        words_file = datadir + 'LDC2015E75/data/ner-result1.txt'
+        ner_mentions_file = datadir + 'LDC2015E75/data/ner-mentions.txt'
+        dst_post_authors_file = datadir + 'LDC2015E75/data/post-authors.txt'
+        dst_name_dict_mentions_file = datadir + 'LDC2015E75/data/name-dict-mentions.txt'
+        dst_extra_mentions_file = datadir + 'LDC2015E75/data/ner-expanded.txt'
     else:
-        doc_list_file = 'e:/el/LDC2015E103/data/eng-docs-list.txt'
-        text_file = 'e:/el/LDC2015E103/data/doc-text.txt'
-        words_file = 'e:/el/LDC2015E103/data/ner-result1.txt'
-        ner_mentions_file = 'e:/el/LDC2015E103/data/ner-mentions.txt'
-        dst_name_dict_mentions_file = 'e:/el/LDC2015E103/data/name-dict-mentions.txt'
-        dst_post_authors_file = 'e:/el/LDC2015E103/data/post-authors.txt'
-        dst_extra_mentions_file = 'e:/el/LDC2015E103/data/ner-expanded.txt'
+        doc_list_file = datadir + 'LDC2015E103/data/eng-docs-list.txt'
+        text_file = datadir + 'LDC2015E103/data/doc-text.txt'
+        words_file = datadir + 'LDC2015E103/data/ner-result1.txt'
+        ner_mentions_file = datadir + 'LDC2015E103/data/ner-mentions.txt'
+        dst_name_dict_mentions_file = datadir + 'LDC2015E103/data/name-dict-mentions.txt'
+        dst_post_authors_file = datadir + 'LDC2015E103/data/post-authors.txt'
+        dst_extra_mentions_file = datadir + 'LDC2015E103/data/ner-expanded.txt'
 
     print 'extract post authors'
     # __extract_post_author_mentions(doc_list_file, text_file, dst_post_authors_file)
 
-    name_dict_file = 'e:/el/res/name-dict.txt'
-    print 'extract adj gpe mentions'
-    # __extract_name_dict_mentions(name_dict_file, text_file, words_file, dst_name_dict_mentions_file)
+    name_dict_file = datadir + 'res/name-dict-with-type.txt'
+    print 'extract names in dict'
+    __extract_name_dict_mentions(name_dict_file, text_file, words_file, dst_name_dict_mentions_file)
 
     print 'expand mentions'
-    __mention_expand(text_file, ner_mentions_file, dst_extra_mentions_file)
+    # __mention_expand(text_file, ner_mentions_file, dst_extra_mentions_file)
 
 if __name__ == '__main__':
     main()

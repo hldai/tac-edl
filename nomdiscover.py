@@ -1,7 +1,6 @@
 import re
 from itertools import izip
 from utils import doc_id_from_path, match_raw_text
-from doctext import extract_text
 from mention import Mention
 
 doc_head = '<?xml version="1.0" encoding="utf-8"?>\n'
@@ -189,10 +188,11 @@ def __find_words(text_beg, text_end, word_span_list, words):
 
 
 def __extract_nom_mentions_et():
-    nom_dict_file = 'e:/el/res/nom-dict-edit.txt'
-    text_file = 'e:/el/LDC2015E103/data/doc-text.txt'
-    tagged_words_file = 'e:/el/LDC2015E103/data/doc-text-pos.txt'
-    edl_gold_file = 'e:/el/LDC2015E103/data/tac_kbp_2015_tedl_evaluation_gold_standard_entity_mentions.tab'
+    datadir = '/home/dhl/data/EDL/'
+    nom_dict_file = datadir + 'res/nom-dict-edit.txt'
+    text_file = datadir + 'LDC2015E103/data/doc-text.txt'
+    tagged_words_file = datadir + 'LDC2015E103/data/doc-text-pos.txt'
+    edl_gold_file = datadir + 'LDC2015E103/data/tac_kbp_2015_tedl_evaluation_gold_standard_entity_mentions.tab'
 
     all_gold_mentions = Mention.load_edl_file(edl_gold_file)
 
@@ -206,7 +206,8 @@ def __extract_nom_mentions_et():
     f_text = open(text_file, 'r')
     f_tw = open(tagged_words_file, 'r')
     for line0, line1 in izip(f_text, f_tw):
-        vals0 = line0[:-1].split('\t')
+        vals0 = line0.rstrip().split('\t')
+        print vals0
         num_lines0 = int(vals0[0])
         doc_id = vals0[1]
         text_beg_pos = int(vals0[2])

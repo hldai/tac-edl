@@ -197,14 +197,16 @@ def __in_text_process(prev_text_file, dst_text_file, keep_web_addr=True, split_b
 
 def main():
     dataset = 75
+    datadir = '/home/dhl/data/EDL/'
+
     if dataset == 75:
-        doc_list_file = 'e:/el/LDC2015E75/data/eng-docs-list.txt'
-        dst_text_file0 = 'e:/el/LDC2015E75/data/doc-text.txt'
-        dst_text_file1 = 'e:/el/LDC2015E75/data/doc-text-pd.txt'
+        doc_list_file = datadir + 'LDC2015E75/data/eng-docs-list.txt'
+        dst_text_file0 = datadir + 'LDC2015E75/data/doc-text.txt'
+        dst_text_file1 = datadir + 'LDC2015E75/data/doc-text-pd.txt'
     else:
-        doc_list_file = 'e:/el/LDC2015E103/data/eng-docs-list.txt'
-        dst_text_file0 = 'e:/el/LDC2015E103/data/doc-text.txt'
-        dst_text_file1 = 'e:/el/LDC2015E103/data/doc-text-pd.txt'
+        doc_list_file = datadir + 'LDC2015E103/data/eng-docs-list.txt'
+        dst_text_file0 = datadir + 'LDC2015E103/data/doc-text.txt'
+        dst_text_file1 = datadir + 'LDC2015E103/data/doc-text-pd.txt'
 
     # __extract_text_from_docs(doc_list_file, dst_text_file0)
     __in_text_process(dst_text_file0, dst_text_file1, False, True)

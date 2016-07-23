@@ -61,17 +61,19 @@ def gen_nom_dict():
 
 
 def __gen_docs_list():
-    # docs_dir = 'e:/el/LDC2015E103/data/eng-docs'
-    # docs_list_file = 'e:/el/LDC2015E103/data/eng-docs-list.txt'
+    docs_dir = '/home/dhl/data/EDL/LDC2015E103/data/eng-docs'
+    docs_list_file = '/home/dhl/data/EDL/LDC2015E103/data/eng-docs-list.txt'
 
-    docs_dir = 'e:/el/LDC2015E75/data/eng-docs'
-    docs_list_file = 'e:/el/LDC2015E75/data/eng-docs-list.txt'
+    # docs_dir = '/home/dhl/data/EDL/LDC2015E75/data/eng-docs'
+    # docs_list_file = '/home/dhl/data/EDL/LDC2015E75/data/eng-docs-list.txt'
 
     dir_list = [docs_dir]
     fout = open(docs_list_file, 'wb')
     while dir_list:
         d = dir_list.pop()
-        for f in os.listdir(d):
+        file_names = [f for f in os.listdir(d)]
+        file_names.sort()
+        for f in file_names:
             cur_path = os.path.join(d, f)
             if os.path.isdir(cur_path):
                 dir_list.append(cur_path)
@@ -101,8 +103,8 @@ def fix_edl_file_positions():
 
 def main():
     # gen_nom_dict()
-    # __gen_docs_list()
-    fix_edl_file_positions()
+    __gen_docs_list()
+    # fix_edl_file_positions()
 
 if __name__ == '__main__':
     main()
