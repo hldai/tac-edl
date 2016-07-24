@@ -36,12 +36,14 @@ def main():
         name_dict_mentions_file = datadir + 'LDC2015E75/data/name-dict-mentions.txt'
         post_author_file = datadir + 'LDC2015E75/data/post-authors.txt'
         extra_mentions_file = datadir + 'LDC2015E75/data/ner-expanded.txt'
+        nom_mentions_file = datadir + 'LDC2015E75/result/nom-mentions.txt'
         all_mentions_tac_edl_file = datadir + 'LDC2015E75/data/all-mentions-tac.txt'
     else:
         ner_mentions_file = datadir + 'LDC2015E103/data/ner-mentions.txt'
         name_dict_mentions_file = datadir + 'LDC2015E103/data/name-dict-mentions.txt'
         post_author_file = datadir + 'LDC2015E103/data/post-authors.txt'
         extra_mentions_file = datadir + 'LDC2015E103/data/ner-expanded.txt'
+        nom_mentions_file = datadir + 'LDC2015E103/result/nom-mentions.txt'
         all_mentions_tac_edl_file = datadir + 'LDC2015E103/data/all-mentions-tac.txt'
 
     # __merge_mentions([dst_ner_tac_edl_file0, dst_ner_tac_edl_file1, post_author_file], all_mentions_tac_edl_file)
@@ -50,6 +52,8 @@ def main():
     # __merge_mentions([ner_mentions_file, post_author_file, name_dict_mentions_file], all_mentions_tac_edl_file)
     __merge_mentions([name_dict_mentions_file, ner_mentions_file, post_author_file,
                       extra_mentions_file], all_mentions_tac_edl_file)
+    # __merge_mentions([name_dict_mentions_file, nom_mentions_file, ner_mentions_file, post_author_file,
+    #                   extra_mentions_file], all_mentions_tac_edl_file)
 
 if __name__ == '__main__':
     main()
