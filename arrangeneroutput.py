@@ -127,14 +127,14 @@ def main():
     datadir = '/home/dhl/data/EDL/'
     if dataset == 75:
         doc_text_file = datadir + 'LDC2015E75/data/doc-text.txt'
-        ner_result_file0 = datadir + 'LDC2015E75/data/ner-result0.txt'
-        ner_result_file1 = datadir + 'LDC2015E75/data/ner-result1.txt'
-        dst_mention_file = datadir + 'LDC2015E75/data/ner-mentions.txt'
+        ner_result_file0 = datadir + 'LDC2015E75/output/ner-result0.txt'
+        ner_result_file1 = datadir + 'LDC2015E75/output/ner-result1.txt'
+        dst_mention_file = datadir + 'LDC2015E75/output/ner-mentions.txt'
     else:
         doc_text_file = datadir + 'LDC2015E103/data/doc-text.txt'
-        ner_result_file0 = datadir + 'LDC2015E103/data/ner-result0.txt'
-        ner_result_file1 = datadir + 'LDC2015E103/data/ner-result1.txt'
-        dst_mention_file = datadir + 'LDC2015E103/data/ner-mentions.txt'
+        ner_result_file0 = datadir + 'LDC2015E103/output/ner-result0.txt'
+        ner_result_file1 = datadir + 'LDC2015E103/output/ner-result1.txt'
+        dst_mention_file = datadir + 'LDC2015E103/output/ner-mentions.txt'
 
     arrange_ner_result(doc_text_file, [ner_result_file0, ner_result_file1], dst_mention_file)
 
