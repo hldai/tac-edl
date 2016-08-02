@@ -61,8 +61,11 @@ def gen_nom_dict():
 
 
 def __gen_docs_list():
-    docs_dir = '/home/dhl/data/EDL/LDC2015E103/data/eng-docs'
-    docs_list_file = '/home/dhl/data/EDL/LDC2015E103/data/eng-docs-list.txt'
+    # docs_dir = '/home/dhl/data/EDL/LDC2015E103/data/eng-docs'
+    # docs_list_file = '/home/dhl/data/EDL/LDC2015E103/data/eng-docs-list.txt'
+
+    docs_dir = '/home/dhl/data/EDL/LDC2016E63/data/eng'
+    docs_list_file = '/home/dhl/data/EDL/LDC2016E63/data/eng-docs-list.txt'
 
     # docs_dir = '/home/dhl/data/EDL/LDC2015E75/data/eng-docs'
     # docs_list_file = '/home/dhl/data/EDL/LDC2015E75/data/eng-docs-list.txt'
@@ -78,6 +81,7 @@ def __gen_docs_list():
             if os.path.isdir(cur_path):
                 dir_list.append(cur_path)
             if os.path.isfile(cur_path):
+                assert cur_path.endswith('xml')
                 fout.write('%s\n' % cur_path)
     fout.close()
 

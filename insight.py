@@ -152,7 +152,7 @@ def __pseudo_link():
 
 def __get_mid_name():
     fb_name_file = '/media/dhl/Data/data/el/tmpres/freebase/full_freebase_name_en.txt'
-    dst_id = '0d05w3'
+    dst_id = '09b6zr'
 
     dst_beg = dst_id + '\t'
     fin = open(fb_name_file)
@@ -171,9 +171,9 @@ def main():
     # __get_type_map()
     # __gold_mention_insight()
     # __check_mention_fb_types()
-    # __type_eval()
+    __type_eval()
     # __pseudo_link()
-    __get_mid_name()
+    # __get_mid_name()
     pass
 
 if __name__ == '__main__':

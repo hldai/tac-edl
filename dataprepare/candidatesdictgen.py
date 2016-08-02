@@ -68,31 +68,40 @@ def __filter_mid_alias_cnt_file():
     fout.close()
 
 
-def __gen_candidates_dict():
-    mid_alias_cnt_file = '/home/dhl/data/EDL/tmpres/mid-alias-cnt-ord-alias-filtered.txt'
-    dst_file = '/home/dhl/data/EDL/tmpres/mid-alias-cnt-ord-alias-compact.txt'
+def __read_str_with_byte_len(f):
+    num_bytes = np.fromfile(f, '>i1', 1)[0]
+    # print num_bytes
+    return f.read(num_bytes)
 
-    fin = open(mid_alias_cnt_file, 'r')
-    fout = open(dst_file, 'wb')
-    prev_name = ''
-    for i, line in enumerate(fin):
-        vals = line.rstrip().split('\t')
-        cur_name = vals[1]
-        if __name_legal(cur_name):
-            fout.write(line)
 
-        prev_name = vals[1]
-        # if i == 100000:
-        #     break
-        if (i + 1) % 1000000 == 0:
-            print i + 1
-    fin.close()
-    fout.close()
+def __candidates_dict():
+    candidates_dict_file = '/home/dhl/data/EDL/tmpres/candidates-dict.bin'
+
+    f = open(candidates_dict_file, 'r')
+    num_names = np.fromfile(f, '>i4', 1)[0]
+    total_num_candidates = np.fromfile(f, '>i4', 1)[0]
+    print num_names, total_num_candidates
+    for i in xrange(num_names):
+        name = __read_str_with_byte_len(f)
+
+        cur_candidates = list()
+
+        num_candidates = np.fromfile(f, '>i2', 1)[0]
+        for _ in xrange(num_candidates):
+            mid = __read_str_with_byte_len(f)
+            cmns = np.fromfile(f, '>f4', 1)[0]
+            cur_candidates.append((mid, cmns))
+
+        if name == 'clinton':
+            for x in cur_candidates:
+                print x[0], x[1]
+            break
+    f.close()
 
 
 def main():
     # __filter_mid_alias_cnt_file()
-    __gen_candidates_dict()
+    __candidates_dict()
 
 if __name__ == '__main__':
     main()

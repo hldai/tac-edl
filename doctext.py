@@ -3,11 +3,19 @@
 import re
 from itertools import izip
 from bs4 import BeautifulSoup
+import os
 
-text_patterns = ['<HEADLINE>\s*(.*?)\s*</HEADLINE>', '<P>\s*(.*?)\s*</P>',
-                 '<headline>\s*(.*?)\s*</headline>',
-                 '<POST>\s*<POSTER>.*?</POSTER>\s*<POSTDATE>.*?</POSTDATE>\s*(.*?)\s*</POST>']
-df_text_pattern = '<post id=.*?>\s*(.*?)\s*</post>'
+docid_patterns = ['<doc\s+id="(.*?)"', '<DOC\s+id="(.*?)"']
+
+nw_headline_pattern = '<HEADLINE>\s*(.*?)\s*</HEADLINE>'
+df_headline_pattern = '<headline>\s*(.*?)\s*</headline>'
+dateline_pattern = '<DATELINE>\s*(.*?)\s*</DATELINE>'
+datetime_pattern = '<DATETIME>\s*(.*?)\s*</DATETIME>'
+
+nw_text_patterns = ['<P>\s*(.*?)\s*</P>', '<POST>\s*<POSTER>.*?</POSTER>\s*<POSTDATE>.*?</POSTDATE>\s*(.*?)\s*</POST>',
+                    '<TEXT>\s*(.*?)\s*</TEXT>']
+
+df_text_pattern = '<post.*?>\s*(.*?)\s*</post>'
 
 quote_beg = '<quote'
 quote_end = '</quote>'
@@ -86,52 +94,68 @@ def __text_in_post(post_text, start_pos):
     return text_list
 
 
-def __extract_text(xml_text):
+def __get_text_spans(xml_text, text_pattern):
     text_span_list = list()
+    miter = re.finditer(text_pattern, xml_text, re.DOTALL)
+    for m in miter:
+        text_span_list.append(m.span(1))
+    return text_span_list
 
-    for p in text_patterns:
-        miter = re.finditer(p, xml_text, re.DOTALL)
-        # print p
-        for m in miter:
-            text_span_list.append(m.span(1))
-            # print m.span(1), len(m.group(1))
-            # print m.group(1)
-        # break
+
+def __extract_text_nw(xml_text):
+    head_line_spans = __get_text_spans(xml_text, nw_headline_pattern)
+    dateline_spans = __get_text_spans(xml_text, dateline_pattern)
+    datetime_spans = __get_text_spans(xml_text, datetime_pattern)
+    if dateline_spans or datetime_spans:
+        print xml_text
+        exit()
+
+    all_text_spans = head_line_spans + dateline_spans + datetime_spans
+
+    for text_pattern in nw_text_patterns:
+        text_spans = __get_text_spans(xml_text, text_pattern)
+        if text_spans:
+            all_text_spans += text_spans
+            break
+
+    assert all_text_spans
+    return all_text_spans
+
+
+def __extract_text_df(xml_text):
+    head_line_spans = __get_text_spans(xml_text, df_headline_pattern)
+    text_span_list = head_line_spans
 
     miter = re.finditer(df_text_pattern, xml_text, re.DOTALL)
     for m in miter:
         cur_text = m.group(1)
-        # text_list.append(cur_text)
-        # print m.span(1), len(m.group(1))
-        # print m.group(1)
         post_text_span_list = __text_in_post(cur_text, m.span(1)[0])
         text_span_list += post_text_span_list
 
     # for text_span in text_span_list:
     #     print xml_text[text_span[0]:text_span[1]]
     #     print '############'
-        # print cur_text[text_start:]
-        # print '############'
+    #     print cur_text[text_start:]
+    #     print '############'
 
     assert text_span_list
-
     return text_span_list
 
 
-def __find_post_authors(text):
-    pa_list = list()
-    miter_pa = re.finditer('<post.*?author="(.*?)"', text)
-    for m in miter_pa:
-        pa_list.append(m.span(1))
-    return pa_list
+def __get_docid(xml_text):
+    for p in docid_patterns:
+        m = re.search(p, xml_text)
+        if m:
+            return m.group(1)
+    return ''
 
 
 def __extract_text_from_docs(doc_list_file, dst_text_file):
     fin_paths = open(doc_list_file, 'r')
     fout = open(dst_text_file, 'wb')
-    for line in fin_paths:
+    for i, line in enumerate(fin_paths):
         doc_path = line[:-1]
-        # if doc_path.endswith('.nw.xml'):
+        # if '_NW_' in doc_path:
         #     continue
         # if not doc_path.endswith('ENG_DF_000200_20150702_F001000DW.df.xml'):
         #     continue
@@ -141,25 +165,28 @@ def __extract_text_from_docs(doc_list_file, dst_text_file):
         doc_file_text = doc_file.read().decode('utf-8')
         doc_file.close()
 
-        docid = doc_id_from_path(doc_path)
-        print docid
+        docid = __get_docid(doc_file_text)
+        docid_path = doc_id_from_path(doc_path)
+        if (i + 1) % 1000 == 0:
+            print i + 1, docid
 
-        # post_author_spans = __find_post_authors(doc_file_text)
-        # for sp in post_author_spans:
-        #     fout_pa.write('%s\t%s\t%d\t%d\tPER\tNAM\n' % (doc_file_text[sp[0]:sp[1]].encode('utf-8'), docid,
-        #                                                   sp[0] - len(doc_head), sp[1] - len(doc_head) - 1))
+        assert docid == docid_path
 
-        text_span_list = __extract_text(doc_file_text)
+        if 'nw' in doc_path:
+            text_span_list = __extract_text_nw(doc_file_text)
+        else:
+            text_span_list = __extract_text_df(doc_file_text)
+
+        doc_text_start_pos = 0
+        if doc_file_text.startswith(doc_head):
+            doc_text_start_pos = len(doc_head)
 
         fout.write('%s\t%d\n' % (docid, len(text_span_list)))
         for sp in text_span_list:
             cur_text = doc_file_text[sp[0]:sp[1]]
             num_lines = cur_text.count('\n') + 1
-            fout.write('%d\t%d\t%d\n%s\n' % (num_lines, sp[0] - len(doc_head), sp[1] - len(doc_head) - 1,
+            fout.write('%d\t%d\t%d\n%s\n' % (num_lines, sp[0] - doc_text_start_pos, sp[1] - doc_text_start_pos - 1,
                                              cur_text.encode('utf-8')))
-            # fout.write('%d\t%s\t%d\t%d\n%s\n' % (num_lines, docid,
-            #                                      sp[0] - len(doc_head), sp[1] - len(doc_head) - 1,
-            #                                      cur_text.encode('utf-8')))
         # break
     fin_paths.close()
     fout.close()
@@ -169,16 +196,24 @@ def __in_text_process(prev_text_file, dst_text_file, keep_web_addr=True, split_b
     f = open(prev_text_file, 'r')
     fout = open(dst_text_file, 'wb')
 
+    i = 0
     while True:
         docid, texts, spans = next_doc_text_blocks(f)
         if not docid:
             break
 
-        print docid
+        if (i + 1) % 1000 == 0:
+            print i + 1, docid
+        i += 1
+
         if split_by_doc:
             fout.write('%s\t%d\n' % (docid, len(texts)))
 
         for cur_text, span in izip(texts, spans):
+            # if '&lt;3D' in cur_text:
+            #     print docid
+            #     exit()
+
             cur_text = cur_text.replace('&lt;', '<')
             cur_text = cur_text.replace('&gt;', '> ')
             soup = BeautifulSoup(cur_text, 'html.parser')
@@ -191,22 +226,21 @@ def __in_text_process(prev_text_file, dst_text_file, keep_web_addr=True, split_b
                 fout.write('%d\n%s\n' % (new_num_lines, cur_text.encode('utf-8')))
             else:
                 fout.write('%d\t%s\t\n%s\n' % (new_num_lines, docid, cur_text.encode('utf-8')))
+        # break
     f.close()
     fout.close()
 
 
 def main():
-    dataset = 75
-    datadir = '/home/dhl/data/EDL/'
+    dataset = 'LDC2015E75'
+    dataset = 'LDC2015E103'
+    dataset = 'LDC2016E63'
 
-    if dataset == 75:
-        doc_list_file = datadir + 'LDC2015E75/data/eng-docs-list.txt'
-        dst_text_file0 = datadir + 'LDC2015E75/data/doc-text.txt'
-        dst_text_file1 = datadir + 'LDC2015E75/data/doc-text-pd.txt'
-    else:
-        doc_list_file = datadir + 'LDC2015E103/data/eng-docs-list.txt'
-        dst_text_file0 = datadir + 'LDC2015E103/data/doc-text.txt'
-        dst_text_file1 = datadir + 'LDC2015E103/data/doc-text-pd.txt'
+    datadir = '/home/dhl/data/EDL'
+
+    doc_list_file = os.path.join(datadir, dataset, 'data/eng-docs-list.txt')
+    dst_text_file0 = os.path.join(datadir, dataset, 'data/doc-text.txt')
+    dst_text_file1 = os.path.join(datadir, dataset, 'data/doc-text-pd.txt')
 
     # __extract_text_from_docs(doc_list_file, dst_text_file0)
     __in_text_process(dst_text_file0, dst_text_file1, False, True)

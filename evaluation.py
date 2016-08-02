@@ -25,6 +25,9 @@ def __evaluate_edl(gold_edl_file, sys_edl_file):
                     sys_cnt -= 1
                     break
 
+                if sm.entity_type != gm.entity_type:
+                    print '%s\t%s\t%s\t%s' % (docid, gm.name, gm.entity_type, sm.entity_type)
+
                 if sm.mid == gm.mid:
                     hit_cnt += 1
                 elif not gm.mid.startswith('NIL'):
@@ -33,8 +36,8 @@ def __evaluate_edl(gold_edl_file, sys_edl_file):
                     # print sm.mid, gm.mid, gm.name, docid
 
     errors.sort(key=lambda x: x[3])
-    for v in errors:
-        print '%s\t%s\t%s\t%s' % (v[0], v[1], v[2], v[3])
+    # for v in errors:
+    #     print '%s\t%s\t%s\t%s' % (v[0], v[1], v[2], v[3])
 
     print '#hit: %d, #sys: %d, #gold: %d' % (hit_cnt, sys_cnt, gold_cnt)
     hit_cnt = float(hit_cnt)
@@ -112,26 +115,26 @@ def __find_type_errors(gold_edl_file, sys_edl_file):
 
 
 def main():
-    dataset = 75
-    # dataset = 103
-    require_type_match = False
+    # dataset = 75
+    dataset = 103
+    require_type_match = True
     require_kbid_match = True
 
     data_dir = '/home/dhl/data/EDL/'
 
     if dataset == 75:
         gold_edl_file = data_dir + 'LDC2015E75/data/tac_kbp_2015_tedl_training_gold_fixed.tab'
-        gold_edl_file = data_dir + 'LDC2015E75/data/gold-eng-mentions.tab'
-        # sys_edl_file = data_dir + 'LDC2015E75/data/all-mentions-tac.txt'
-        sys_edl_file = data_dir + 'LDC2015E75/output/sys-link-gm.tab'
+        # gold_edl_file = data_dir + 'LDC2015E75/data/gold-eng-mentions.tab'
+        sys_edl_file = data_dir + 'LDC2015E75/data/all-mentions-tac.txt'
+        sys_edl_file = data_dir + 'LDC2015E75/output/sys-link-gm-new.tab'
         false_pos_file = data_dir + 'LDC2015E75/output/fp.txt'
         false_neg_file = data_dir + 'LDC2015E75/output/fn.txt'
     else:
         # gold_edl_file = data_dir + 'LDC2015E103/data/tac_kbp_2015_tedl_evaluation_gold_standard_entity_mentions.tab'
         gold_edl_file = data_dir + 'LDC2015E103/data/gold-eng-mentions.tab'
         # sys_edl_file = 'e:/el/LDC2015E103/data/ner-result.txt'
-        # sys_edl_file = data_dir + 'LDC2015E103/result/all-mentions-tac.txt'
-        sys_edl_file = data_dir + 'LDC2015E103/output/sys-link-gm.tab'
+        # sys_edl_file = data_dir + 'LDC2015E103/output/all-mentions-tac.txt'
+        sys_edl_file = data_dir + 'LDC2015E103/output/sys-link-sm-nl.tab'
         false_pos_file = data_dir + 'LDC2015E103/output/fp.txt'
         false_neg_file = data_dir + 'LDC2015E103/output/fn.txt'
 
