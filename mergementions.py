@@ -1,3 +1,5 @@
+import os
+
 def __merge_mentions(mention_file_list, dst_result_file):
     mention_spans_docs = dict()
     fout = open(dst_result_file, 'wb')
@@ -28,32 +30,28 @@ def __merge_mentions(mention_file_list, dst_result_file):
 
 
 def main():
-    dataset = 103
+    # dataset = 'LDC2015E75'
+    dataset = 'LDC2015E103'
+    # dataset = 'LDC2016E63'
+
     datadir = '/home/dhl/data/EDL/'
-    if dataset == 75:
-        ner_mentions_file = datadir + 'LDC2015E75/data/ner-mentions.txt'
-        name_dict_mentions_file = datadir + 'LDC2015E75/data/name-dict-mentions.txt'
-        post_author_file = datadir + 'LDC2015E75/data/post-authors.txt'
-        extra_mentions_file = datadir + 'LDC2015E75/data/ner-expanded.txt'
-        nom_mentions_file = datadir + 'LDC2015E75/result/nom-mentions.txt'
-        all_mentions_tac_edl_file = datadir + 'LDC2015E75/data/all-mentions-tac.txt'
-    else:
-        ner_mentions_file = datadir + 'LDC2015E103/data/ner-mentions.txt'
-        name_dict_mentions_file = datadir + 'LDC2015E103/data/name-dict-mentions.txt'
-        post_author_file = datadir + 'LDC2015E103/data/post-authors.txt'
-        # extra_mentions_file = datadir + 'LDC2015E103/data/ner-expanded.txt'
-        extra_mentions_file = datadir + 'LDC2015E103/data/ner-mentions.txt'
-        nom_mentions_file = datadir + 'LDC2015E103/result/nom-mentions.txt'
-        all_mentions_tac_edl_file = datadir + 'LDC2015E103/result/all-mentions-tac.txt'
+
+    ner_mentions_file = os.path.join(datadir, dataset, 'output/ner-mentions.txt')
+    name_dict_mentions_file = os.path.join(datadir, dataset, 'output/name-dict-mentions.txt')
+    post_author_file = os.path.join(datadir, dataset, 'output/post-authors.txt')
+    extra_mentions_file = os.path.join(datadir, dataset, 'output/ner-expanded.txt')
+    nom_mentions_file = os.path.join(datadir, dataset, 'output/nom-mentions.txt')
+    all_mentions_tac_edl_file = os.path.join(datadir, dataset, 'output/all-mentions-tac.tab')
+    all_mentions_tac_edl_file = os.path.join(datadir, dataset, 'output/nom-mentions.tab')
 
     # __merge_mentions([dst_ner_tac_edl_file0, dst_ner_tac_edl_file1, post_author_file], all_mentions_tac_edl_file)
     # __merge_mentions([dst_ner_tac_edl_file0, dst_ner_tac_edl_file1, post_author_file,
     #                   name_dict_mentions_file], all_mentions_tac_edl_file)
-    # __merge_mentions([ner_mentions_file], all_mentions_tac_edl_file)
+    __merge_mentions([nom_mentions_file], all_mentions_tac_edl_file)
     # __merge_mentions([name_dict_mentions_file, ner_mentions_file, post_author_file,
     #                   extra_mentions_file], all_mentions_tac_edl_file)
-    __merge_mentions([name_dict_mentions_file, nom_mentions_file, ner_mentions_file, post_author_file,
-                      extra_mentions_file], all_mentions_tac_edl_file)
+    # __merge_mentions([name_dict_mentions_file, nom_mentions_file, ner_mentions_file, post_author_file,
+    #                   extra_mentions_file], all_mentions_tac_edl_file)
 
 if __name__ == '__main__':
     main()

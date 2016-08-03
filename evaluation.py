@@ -1,5 +1,7 @@
-from mention import Mention
+import os
 from itertools import izip
+
+from mention import Mention
 
 
 def __evaluate_edl(gold_edl_file, sys_edl_file):
@@ -14,19 +16,26 @@ def __evaluate_edl(gold_edl_file, sys_edl_file):
             if not gm.mid.startswith('NIL'):
                 gold_cnt += 1
 
+        hit_list = [False for _ in xrange(len(gold_mentions_doc))]
         for sm in sys_mentions_doc:
+            for i, gm in enumerate(gold_mentions_doc):
+                if sm.beg_pos == gm.beg_pos and sm.end_pos == gm.end_pos:
+                    hit_list[i] = True
+                    break
+
             if sm.mid.startswith('NIL'):
                 continue
             sys_cnt += 1
-            for gm in gold_mentions_doc:
+            for i, gm in enumerate(gold_mentions_doc):
                 if sm.beg_pos != gm.beg_pos or sm.end_pos != gm.end_pos:
                     continue
+
                 if gm.mention_type == 'NOM':
                     sys_cnt -= 1
                     break
 
-                if sm.entity_type != gm.entity_type:
-                    print '%s\t%s\t%s\t%s' % (docid, gm.name, gm.entity_type, sm.entity_type)
+                # if sm.entity_type != gm.entity_type:
+                #     print '%s\t%s\t%s\t%s' % (docid, gm.name, gm.entity_type, sm.entity_type)
 
                 if sm.mid == gm.mid:
                     hit_cnt += 1
@@ -47,13 +56,13 @@ def __evaluate_edl(gold_edl_file, sys_edl_file):
     print 'prec: %f, recall: %f, f1: %f' % (prec, recall, f1)
 
 
-def evaluate(gold_edl_file, sys_edl_file, fn_file, fp_file, require_type_match=True):
+def __evaluate_ed(gold_edl_file, sys_edl_file, fn_file, fp_file, require_type_match=True):
     gold_mentions = Mention.load_edl_file(gold_edl_file, arrange_by_docid=True)
     sys_mentions = Mention.load_edl_file(sys_edl_file, arrange_by_docid=True)
 
-    fout_fn = open(fn_file, 'wb')
     fout_fp = open(fp_file, 'wb')
     sys_cnt, gold_cnt, hit_cnt = 0, 0, 0
+    fn_mentions = list()
     for docid, sys_mentions_doc in sys_mentions.iteritems():
         sys_cnt += len(sys_mentions_doc)
 
@@ -79,10 +88,13 @@ def evaluate(gold_edl_file, sys_edl_file, fn_file, fp_file, require_type_match=T
 
         for gm, hit in izip(nam_gold_mentions, gold_hit_tags):
             if not hit:
-                fout_fn.write('%s\t%s\t%d\t%d\n' % (gm.name.encode('utf-8'), docid, gm.beg_pos, gm.end_pos))
+                fn_mentions.append(gm)
+                # fout_fn.write('%s\t%s\t%d\t%d\n' % (gm.name.encode('utf-8'), docid, gm.beg_pos, gm.end_pos))
 
-    fout_fn.close()
     fout_fp.close()
+
+    fn_mentions.sort(key=lambda x: x.name)
+    Mention.write_mentions(fn_mentions, fn_file)
 
     print '#hit: %d, #sys: %d, #gold: %d' % (hit_cnt, sys_cnt, gold_cnt)
     hit_cnt = float(hit_cnt)
@@ -115,31 +127,23 @@ def __find_type_errors(gold_edl_file, sys_edl_file):
 
 
 def main():
-    # dataset = 75
-    dataset = 103
+    # dataset = 'LDC2015E75'
+    dataset = 'LDC2015E103'
+    # dataset = 'LDC2016E63'
     require_type_match = True
     require_kbid_match = True
 
     data_dir = '/home/dhl/data/EDL/'
 
-    if dataset == 75:
-        gold_edl_file = data_dir + 'LDC2015E75/data/tac_kbp_2015_tedl_training_gold_fixed.tab'
-        # gold_edl_file = data_dir + 'LDC2015E75/data/gold-eng-mentions.tab'
-        sys_edl_file = data_dir + 'LDC2015E75/data/all-mentions-tac.txt'
-        sys_edl_file = data_dir + 'LDC2015E75/output/sys-link-gm-new.tab'
-        false_pos_file = data_dir + 'LDC2015E75/output/fp.txt'
-        false_neg_file = data_dir + 'LDC2015E75/output/fn.txt'
-    else:
-        # gold_edl_file = data_dir + 'LDC2015E103/data/tac_kbp_2015_tedl_evaluation_gold_standard_entity_mentions.tab'
-        gold_edl_file = data_dir + 'LDC2015E103/data/gold-eng-mentions.tab'
-        # sys_edl_file = 'e:/el/LDC2015E103/data/ner-result.txt'
-        # sys_edl_file = data_dir + 'LDC2015E103/output/all-mentions-tac.txt'
-        sys_edl_file = data_dir + 'LDC2015E103/output/sys-link-sm-nl.tab'
-        false_pos_file = data_dir + 'LDC2015E103/output/fp.txt'
-        false_neg_file = data_dir + 'LDC2015E103/output/fn.txt'
+    gold_edl_file = os.path.join(data_dir, dataset, 'data/gold-eng-nom-mentions.tab')
+    sys_ed_file = os.path.join(data_dir, dataset, 'output/nom-mentions.tab')
+    # sys_ed_file = os.path.join(data_dir, dataset, 'output/all-mentions-tac.tab')
+    sys_edl_file = os.path.join(data_dir, dataset, 'output/sys-link-sm-nl.tab')
+    false_pos_file = os.path.join(data_dir, dataset, 'output/fp.txt')
+    false_neg_file = os.path.join(data_dir, dataset, 'output/fn.txt')
 
-    # evaluate(gold_edl_file, sys_edl_file, false_neg_file, false_pos_file, require_type_match)
-    __evaluate_edl(gold_edl_file, sys_edl_file)
+    __evaluate_ed(gold_edl_file, sys_ed_file, false_neg_file, false_pos_file, require_type_match)
+    # __evaluate_edl(gold_edl_file, sys_edl_file)
     # __find_type_errors(gold_edl_file, sys_edl_file)
 
 

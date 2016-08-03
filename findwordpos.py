@@ -50,7 +50,7 @@ def __write_tokenized_sentences(words_sens, tgwords_sens, tags_sens, word_positi
         fout.write('\n')
 
 
-def find_word_pos(text_file, words_file, dst_file):
+def __find_word_pos(text_file, words_file, dst_file):
     f_text = open(text_file, 'r')
     f_words = open(words_file, 'r')
     fout = open(dst_file, 'wb')
@@ -87,17 +87,15 @@ def find_word_pos(text_file, words_file, dst_file):
 
 
 def main():
-    dataset = 103
-    if dataset == 75:
-        text_file = 'e:/el/LDC2015E75/data/doc-text.txt'
-        words_file = 'e:/el/LDC2015E75/data/doc-text-words-sen.txt'
-        dst_file = 'e:/el/LDC2015E75/data/doc-text-words-pos.txt'
-    else:
-        text_file = 'e:/el/LDC2015E103/data/doc-text.txt'
-        words_file = 'e:/el/LDC2015E103/data/doc-text-words-sen.txt'
-        dst_file = 'e:/el/LDC2015E103/data/doc-text-words-pos.txt'
+    dataset = 'LDC2015E75'
+    # dataset = 'LDC2015E103'
+    # dataset = 'LDC2016E63'
 
-    find_word_pos(text_file, words_file, dst_file)
+    text_file = '/home/dhl/data/EDL/%s/data/doc-text.txt' % dataset
+    words_file = '/home/dhl/data/EDL/%s/data/doc-text-words-sen.txt' % dataset
+    dst_file = '/home/dhl/data/EDL/%s/data/doc-text-words-pos.txt' % dataset
+
+    __find_word_pos(text_file, words_file, dst_file)
 
 if __name__ == '__main__':
     main()

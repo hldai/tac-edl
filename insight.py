@@ -171,7 +171,7 @@ def main():
     # __get_type_map()
     # __gold_mention_insight()
     # __check_mention_fb_types()
-    __type_eval()
+    # __type_eval()
     # __pseudo_link()
     # __get_mid_name()
     pass

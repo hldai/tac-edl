@@ -1,4 +1,5 @@
 import re
+import os
 from itertools import izip
 
 from mention import Mention
@@ -76,6 +77,7 @@ def __extract_post_author_mentions(doc_list_file, text_file, dst_post_authors_fi
     f_text.close()
 
 
+# TODO use utils.find_phrases_in_words
 def __match_names_by_words(names, words):
     hit_spans, hit_indices = list(), list()
     num_words = len(words)
@@ -97,6 +99,18 @@ def __match_names_by_words(names, words):
     return hit_spans, hit_indices
 
 
+def __load_name_alias_file(name_alias_dict_file):
+    names = dict()
+    f = open(name_alias_dict_file, 'r')
+    for line in f:
+        vals = line.rstrip().split('\t')
+        names[vals[0].decode('utf-8')] = vals[1]
+        for i in xrange(2, len(vals)):
+            names[vals[i].decode('utf-8')] = vals[1]
+    f.close()
+    return names
+
+
 def __load_name_dict(name_dict_file):
     names = dict()
     f = open(name_dict_file, 'r')
@@ -114,8 +128,8 @@ def __tokenize_names(names_set):
     return tokenized_names
 
 
-def __extract_name_dict_mentions(name_dict_file, text_file, words_file, dst_adj_gpe_mentions_file):
-    names_dict = __load_name_dict(name_dict_file)
+def __extract_name_dict_mentions(name_alias_file, text_file, words_file, dst_adj_gpe_mentions_file):
+    names_dict = __load_name_alias_file(name_alias_file)
     entity_types = names_dict.values()
     names = __tokenize_names(names_dict.keys())
 
@@ -228,35 +242,31 @@ def __mention_expand(text_file, mention_file, dst_extra_mentions_file):
 
 
 def main():
-    dataset = 103
+    dataset = 'LDC2015E75'
+    # dataset = 'LDC2015E103'
+    # dataset = 'LDC2016E63'
+
     datadir = '/home/dhl/data/EDL/'
 
-    if dataset == 75:
-        doc_list_file = datadir + 'LDC2015E75/data/eng-docs-list.txt'
-        text_file = datadir + 'LDC2015E75/data/doc-text.txt'
-        words_file = datadir + 'LDC2015E75/data/ner-result1.txt'
-        ner_mentions_file = datadir + 'LDC2015E75/data/ner-mentions.txt'
-        dst_post_authors_file = datadir + 'LDC2015E75/data/post-authors.txt'
-        dst_name_dict_mentions_file = datadir + 'LDC2015E75/data/name-dict-mentions.txt'
-        dst_extra_mentions_file = datadir + 'LDC2015E75/data/ner-expanded.txt'
-    else:
-        doc_list_file = datadir + 'LDC2015E103/data/eng-docs-list.txt'
-        text_file = datadir + 'LDC2015E103/data/doc-text.txt'
-        words_file = datadir + 'LDC2015E103/data/ner-result1.txt'
-        ner_mentions_file = datadir + 'LDC2015E103/data/ner-mentions.txt'
-        dst_name_dict_mentions_file = datadir + 'LDC2015E103/data/name-dict-mentions.txt'
-        dst_post_authors_file = datadir + 'LDC2015E103/data/post-authors.txt'
-        dst_extra_mentions_file = datadir + 'LDC2015E103/data/ner-expanded.txt'
+    name_alias_file = os.path.join(datadir, 'res/names-dict.txt')
+
+    doc_list_file = os.path.join(datadir, dataset, 'data/eng-docs-list.txt')
+    text_file = os.path.join(datadir, dataset, 'data/doc-text.txt')
+    words_file = os.path.join(datadir, dataset, 'output/ner-result1.txt')
+    ner_mentions_file = os.path.join(datadir, dataset, 'output/ner-mentions.txt')
+    dst_post_authors_file = os.path.join(datadir, dataset, 'output/post-authors.txt')
+    dst_name_dict_mentions_file = os.path.join(datadir, dataset, 'output/name-dict-mentions.txt')
+    dst_extra_mentions_file = os.path.join(datadir, dataset, 'output/ner-expanded.txt')
 
     print 'extract post authors'
     # __extract_post_author_mentions(doc_list_file, text_file, dst_post_authors_file)
 
-    name_dict_file = datadir + 'res/name-dict-with-type.txt'
     print 'extract names in dict'
-    __extract_name_dict_mentions(name_dict_file, text_file, words_file, dst_name_dict_mentions_file)
+    __extract_name_dict_mentions(name_alias_file, text_file, words_file, dst_name_dict_mentions_file)
 
     print 'expand mentions'
     # __mention_expand(text_file, ner_mentions_file, dst_extra_mentions_file)
+
 
 if __name__ == '__main__':
     main()
