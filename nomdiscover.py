@@ -291,8 +291,8 @@ def __extract_nom_mentions(nom_dict_file, text_file, tagged_words_file, dst_nom_
 
 
 def main():
-    dataset = 'LDC2015E75'
-    # dataset = 'LDC2015E103'
+    # dataset = 'LDC2015E75'
+    dataset = 'LDC2015E103'
     # dataset = 'LDC2016E63'
 
     datadir = '/home/dhl/data/EDL/'
@@ -300,6 +300,8 @@ def main():
 
     text_file = os.path.join(datadir, dataset, 'data/doc-text.txt')
     tagged_words_file = os.path.join(datadir, dataset, 'data/doc-text-pos.txt')
+    tagged_words_file = os.path.join(datadir, dataset, 'data/doc-text-words-pos.txt')
+    doc_paths_file = os.path.join(datadir, dataset, 'data/eng-docs-list.txt')
     dst_nom_mentions_file = os.path.join(datadir, dataset, 'output/nom-mentions.tab')
 
     edl_gold_file = None
@@ -307,9 +309,6 @@ def main():
         edl_gold_file = os.path.join(datadir, dataset, 'data/gold-eng-mentions.tab')
     # __extract_nom_mentions(nom_dict_file, text_file, tagged_words_file, dst_nom_mentions_file,
     #                        edl_gold_file)
-
-    tagged_words_file = os.path.join(datadir, dataset, 'data/doc-text-words-pos.txt')
-    doc_paths_file = os.path.join(datadir, dataset, 'data/eng-docs-list.txt')
     __extract_nom_mentions_wp(nom_dict_file, doc_paths_file, tagged_words_file, dst_nom_mentions_file)
 
 

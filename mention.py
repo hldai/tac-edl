@@ -26,10 +26,13 @@ class Mention:
     def save_as_edl_file(mentions, dst_file):
         fout = open(dst_file, 'wb')
         for m in mentions:
-            fout.write('%s\t%s\t%s\t%s:%d-%d\t%s\t%s\t%s\t1.0\n' % ('ZJU', m.mention_id, m.name, m.docid,
-                                                                    m.beg_pos, m.end_pos, m.mid, m.entity_type,
-                                                                    m.mention_type))
+            m.to_edl_file(fout)
         fout.close()
+
+    def to_edl_file(self, fout):
+        fout.write('%s\t%s\t%s\t%s:%d-%d\t%s\t%s\t%s\t1.0\n' % (
+            'ZJU', self.mention_id, self.name.encode('utf-8'), self.docid, self.beg_pos,
+            self.end_pos, self.kbid, self.entity_type, self.mention_type))
 
     @staticmethod
     def load_edl_file(filename, arrange_by_docid=False):
@@ -40,7 +43,7 @@ class Mention:
             pos_vals = vals[3].split(':')
             pos_in_doc_vals = pos_vals[1].split('-')
             m = Mention(name=vals[2].decode('utf-8'), beg_pos=int(pos_in_doc_vals[0]), end_pos=int(pos_in_doc_vals[1]),
-                        docid=pos_vals[0], mention_type=vals[6], entity_type=vals[5], mid=vals[4], mention_id=vals[1])
+                        docid=pos_vals[0], mention_type=vals[6], entity_type=vals[5], kbid=vals[4], mention_id=vals[1])
             mentions.append(m)
             # mentions.append((vals[1], vals[2], pos_vals[0], int(pos_in_doc_vals[0]),
             #                  int(pos_in_doc_vals[1]), vals[4], vals[5], vals[6]))
@@ -51,7 +54,7 @@ class Mention:
         return mentions
 
     def __init__(self, name=u'', beg_pos=-1, end_pos=-1, docid='', mention_type='',
-                 entity_type='', mid='', mention_id='TEDL_000001'):
+                 entity_type='', kbid='NIL', mention_id='TEDL_000001'):
         self.mention_id = mention_id
         self.name = name
         self.beg_pos = beg_pos
@@ -59,7 +62,7 @@ class Mention:
         self.docid = docid
         self.mention_type = mention_type
         self.entity_type = entity_type
-        self.mid = mid
+        self.kbid = kbid
 
         # debug
         self.tags = None

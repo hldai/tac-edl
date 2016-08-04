@@ -112,7 +112,7 @@ def nomlink(file_path, out_path):
 #     # s = set(nom_words)
 
 if __name__ == "__main__":
-    file_path = '/home/dhl/data/EDL/LDC2015E103/output/sys-link-sm-d.tab'
-    out_path = '/home/dhl/data/EDL/LDC2015E103/output/sys-link-sm-d-nl.tab'
+    file_path = '/home/dhl/data/EDL/LDC2015E103/output/sys-link-sm.tab'
+    out_path = '/home/dhl/data/EDL/LDC2015E103/output/sys-link-sm-nl.tab'
     nomlink(file_path, out_path)
     # save_nom(out_path)

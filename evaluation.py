@@ -135,9 +135,10 @@ def main():
 
     data_dir = '/home/dhl/data/EDL/'
 
-    gold_edl_file = os.path.join(data_dir, dataset, 'data/gold-eng-nom-mentions.tab')
-    sys_ed_file = os.path.join(data_dir, dataset, 'output/nom-mentions.tab')
-    # sys_ed_file = os.path.join(data_dir, dataset, 'output/all-mentions-tac.tab')
+    gold_edl_file = os.path.join(data_dir, dataset, 'data/gold-eng-mentions.tab')
+    # gold_edl_file = os.path.join(data_dir, dataset, 'data/gold-eng-nom-mentions.tab')
+    # sys_ed_file = os.path.join(data_dir, dataset, 'output/nom-mentions.tab')
+    sys_ed_file = os.path.join(data_dir, dataset, 'output/all-mentions.tab')
     sys_edl_file = os.path.join(data_dir, dataset, 'output/sys-link-sm-nl.tab')
     false_pos_file = os.path.join(data_dir, dataset, 'output/fp.txt')
     false_neg_file = os.path.join(data_dir, dataset, 'output/fn.txt')

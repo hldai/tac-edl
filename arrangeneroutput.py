@@ -1,4 +1,5 @@
 from itertools import izip
+import os
 
 from utils import match_raw_text, next_ner_result
 from doctext import next_doc_text_blocks
@@ -89,10 +90,10 @@ def __mention_exist(mention, mentions):
 def __write_mentions(mentions, fout):
     for m in mentions:
         fout.write('%s\t%s\t%d\t%d\t%s\t%s\n' % (m.name.encode('utf-8'), m.docid, m.beg_pos, m.end_pos,
-                                                    m.entity_type, m.mention_type))
+                                                 m.entity_type, m.mention_type))
 
 
-def arrange_ner_result(doc_text_file, ner_result_files, dst_tac_edl_file):
+def __arrange_ner_result(doc_text_file, ner_result_files, dst_tac_edl_file):
     print ner_result_files
 
     f_text = open(doc_text_file, 'r')
@@ -115,7 +116,9 @@ def arrange_ner_result(doc_text_file, ner_result_files, dst_tac_edl_file):
                 for m in cur_mentions:
                     if not __mention_exist(m, mentions):
                         mentions.append(m)
-        __write_mentions(mentions, fout)
+        for m in mentions:
+            m.to_edl_file(fout)
+        # __write_mentions(mentions, fout)
     f_text.close()
     for f in f_ners:
         f.close()
@@ -123,20 +126,17 @@ def arrange_ner_result(doc_text_file, ner_result_files, dst_tac_edl_file):
 
 
 def main():
-    dataset = 75
+    # dataset = 'LDC2015E75'
+    dataset = 'LDC2015E103'
+    # dataset = 'LDC2016E63'
     datadir = '/home/dhl/data/EDL/'
-    if dataset == 75:
-        doc_text_file = datadir + 'LDC2015E75/data/doc-text.txt'
-        ner_result_file0 = datadir + 'LDC2015E75/output/ner-result0.txt'
-        ner_result_file1 = datadir + 'LDC2015E75/output/ner-result1.txt'
-        dst_mention_file = datadir + 'LDC2015E75/output/ner-mentions.txt'
-    else:
-        doc_text_file = datadir + 'LDC2015E103/data/doc-text.txt'
-        ner_result_file0 = datadir + 'LDC2015E103/output/ner-result0.txt'
-        ner_result_file1 = datadir + 'LDC2015E103/output/ner-result1.txt'
-        dst_mention_file = datadir + 'LDC2015E103/output/ner-mentions.txt'
 
-    arrange_ner_result(doc_text_file, [ner_result_file0, ner_result_file1], dst_mention_file)
+    doc_text_file = os.path.join(datadir, dataset, 'data/doc-text.txt')
+    ner_result_file0 = os.path.join(datadir, dataset, 'output/ner-result0.txt')
+    ner_result_file1 = os.path.join(datadir, dataset, 'output/ner-result1.txt')
+    dst_mention_file = os.path.join(datadir, dataset, 'output/ner-mentions.tab')
+
+    __arrange_ner_result(doc_text_file, [ner_result_file0, ner_result_file1], dst_mention_file)
 
 if __name__ == '__main__':
     main()
