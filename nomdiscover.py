@@ -196,7 +196,7 @@ def __load_doc_paths_as_dict(doc_paths_file):
     return doc_path_dict
 
 
-def __extract_nom_mentions_wp(nom_dict_file, doc_list_file, words_pos_file, dst_nom_mentions_file):
+def __extract_nom_mentions(nom_dict_file, doc_list_file, words_pos_file, dst_nom_mentions_file):
     noms = load_nom_dict(nom_dict_file)
     nom_name_list = [n for n in noms]
     nom_name_list.sort(key=lambda x: -len(x))
@@ -209,7 +209,9 @@ def __extract_nom_mentions_wp(nom_dict_file, doc_list_file, words_pos_file, dst_
     for i, line in enumerate(f_wp):
         vals = line.rstrip().split('\t')
         docid = vals[0]
-        print docid
+
+        if (i + 1) % 10 == 0:
+            print i + 1, docid
 
         doc_path = doc_path_dict[docid]
         doc_text = read_text(doc_path).decode('utf-8')
@@ -228,6 +230,8 @@ def __extract_nom_mentions_wp(nom_dict_file, doc_list_file, words_pos_file, dst_
 
                 tags = [tup[2] for tup in sentence[hit_span[0]:hit_span[1]]]
                 # print tags
+                # if 'NN' not in tags and 'NNP' not in tags:
+                #     continue
                 if 'NN' not in tags:
                     continue
 
@@ -235,7 +239,7 @@ def __extract_nom_mentions_wp(nom_dict_file, doc_list_file, words_pos_file, dst_
                 if '&lt;' in name or 'http:' in name or '&gt;' in name:
                     continue
                 m = Mention(name=name, beg_pos=beg_pos, end_pos=end_pos, docid=docid, mention_type='NOM',
-                            entity_type='PER', mid='NIL00000')
+                            entity_type='PER', kbid='NIL00000')
                 mentions.append(m)
                 # print sentence[hit_span[0]], sentence[hit_span[1]]
                 # print nom_name_list[hit_idx], name
@@ -245,55 +249,10 @@ def __extract_nom_mentions_wp(nom_dict_file, doc_list_file, words_pos_file, dst_
     Mention.save_as_edl_file(mentions, dst_nom_mentions_file)
 
 
-def __extract_nom_mentions(nom_dict_file, text_file, tagged_words_file, dst_nom_mentions_file, edl_gold_file=None):
-    noms = load_nom_dict(nom_dict_file)
-    nom_name_list = [n for n in noms]
-    nom_name_list.sort(key=lambda x: -len(x))
-
-    mention_list = list()
-
-    f_text = open(text_file, 'r')
-    f_tw = open(tagged_words_file, 'r')
-    while True:
-        docid, texts, text_pos_spans = next_doc_text_blocks(f_text)
-        if not docid:
-            break
-        print docid
-
-        for text, text_pos_span in izip(texts, text_pos_spans):
-            line = f_tw.next()
-            vals = line.rstrip().split('\t')
-            num_lines = int(vals[0])
-            assert docid == vals[1]
-
-            words, tags = __read_tagged_words(num_lines, f_tw)
-            word_span_list = match_raw_text(text, words)
-            tmp_mention_list = extract_nom_mentions_in_text(text, nom_name_list)
-            for m in tmp_mention_list:
-                beg_idx, end_idx = __find_words(m.beg_pos, m.end_pos, word_span_list, words)
-                m.tags = tags[beg_idx:end_idx]
-                # print m.name, m.tags
-                if 'NN' not in m.tags:
-                    continue
-
-                m.docid = docid
-                m.beg_pos += text_pos_span[0]
-                m.end_pos += text_pos_span[0] - 1
-                mention_list.append(m)
-    f_text.close()
-    f_tw.close()
-
-    __nom_mentions_to_file(mention_list, dst_nom_mentions_file)
-
-    if edl_gold_file:
-        all_gold_mentions = Mention.load_edl_file(edl_gold_file)
-        __evaluation(mention_list, all_gold_mentions)
-
-
 def main():
     # dataset = 'LDC2015E75'
-    dataset = 'LDC2015E103'
-    # dataset = 'LDC2016E63'
+    # dataset = 'LDC2015E103'
+    dataset = 'LDC2016E63'
 
     datadir = '/home/dhl/data/EDL/'
     nom_dict_file = os.path.join(datadir, 'res/nom-dict-edit.txt')
@@ -307,9 +266,8 @@ def main():
     edl_gold_file = None
     if dataset == 'LDC2015E75' or dataset == 'LDC2015E103':
         edl_gold_file = os.path.join(datadir, dataset, 'data/gold-eng-mentions.tab')
-    # __extract_nom_mentions(nom_dict_file, text_file, tagged_words_file, dst_nom_mentions_file,
-    #                        edl_gold_file)
-    __extract_nom_mentions_wp(nom_dict_file, doc_paths_file, tagged_words_file, dst_nom_mentions_file)
+
+    __extract_nom_mentions(nom_dict_file, doc_paths_file, tagged_words_file, dst_nom_mentions_file)
 
 
 if __name__ == '__main__':

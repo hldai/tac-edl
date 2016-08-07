@@ -75,7 +75,7 @@ def __evaluate_ed(gold_edl_file, sys_edl_file, fn_file, fp_file, require_type_ma
         for sm in sys_mentions_doc:
             hit = False
             for i, gm in enumerate(nam_gold_mentions):
-                type_hit = (sm.entity_type == gm.entity_type) if require_type_match else True
+                type_hit = (sm.entity_type.startswith(gm.entity_type)) if require_type_match else True
                 if sm.beg_pos == gm.beg_pos and sm.end_pos == gm.end_pos and type_hit:
                     hit = True
                     hit_cnt += 1
@@ -127,8 +127,8 @@ def __find_type_errors(gold_edl_file, sys_edl_file):
 
 
 def main():
-    # dataset = 'LDC2015E75'
-    dataset = 'LDC2015E103'
+    dataset = 'LDC2015E75'
+    # dataset = 'LDC2015E103'
     # dataset = 'LDC2016E63'
     require_type_match = True
     require_kbid_match = True
@@ -137,7 +137,8 @@ def main():
 
     gold_edl_file = os.path.join(data_dir, dataset, 'data/gold-eng-mentions.tab')
     # gold_edl_file = os.path.join(data_dir, dataset, 'data/gold-eng-nom-mentions.tab')
-    # sys_ed_file = os.path.join(data_dir, dataset, 'output/nom-mentions.tab')
+    # sys_ed_file = os.path.join(data_dir, dataset, 'output/post-authors.tab')
+    # sys_ed_file = os.path.join(data_dir, dataset, 'output/ner-mentions.tab')
     sys_ed_file = os.path.join(data_dir, dataset, 'output/all-mentions.tab')
     sys_edl_file = os.path.join(data_dir, dataset, 'output/sys-link-sm-nl.tab')
     false_pos_file = os.path.join(data_dir, dataset, 'output/fp.txt')

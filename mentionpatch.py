@@ -43,43 +43,66 @@ def __find_names_in_text_blocks(name_set, texts, spans):
     return result_name_list, result_span_list
 
 
+def __find_post_authors_in_doc(docid, doc_file_text, text_blocks, text_spans):
+    pa_mentions = list()
+    names, spans = __find_post_authors(doc_file_text)
+    for sp in spans:
+        m = Mention(name=doc_file_text[sp[0]:sp[1]], beg_pos=sp[0],
+                    end_pos=sp[1] - 1, docid=docid, mention_type='NAM', entity_type='PER-PA')
+        pa_mentions.append(m)
+
+    names_set = set()
+    for name in names:
+        if len(name) > 1:
+            names_set.add(name)
+
+    mention_names, mention_spans = __find_names_in_text_blocks(names_set, text_blocks, text_spans)
+    for mn, ms in izip(mention_names, mention_spans):
+        m = Mention(name=mn, beg_pos=ms[0], end_pos=ms[1], docid=docid, mention_type='NAM', entity_type='PER-PA')
+        pa_mentions.append(m)
+
+    return pa_mentions
+
+
+def __find_nw_author(docid, doc_file_text):
+    m = re.search('<AUTHOR>\s*(.*?)\s*</AUTHOR>', doc_file_text)
+    if not m:
+        return None
+
+    # TODO multiple authors
+    mention = Mention(name=m.group(1), beg_pos=m.span(1)[0], end_pos=m.span(1)[1] - 1, docid=docid,
+                      mention_type='NAM', entity_type='PER-PA')
+    return [mention]
+
+
 def __extract_post_author_mentions(doc_list_file, text_file, dst_post_authors_file):
     f_text = open(text_file, 'r')
     fout = open(dst_post_authors_file, 'wb')
     doc_paths = __load_doc_paths(doc_list_file)
-    for doc_path in doc_paths:
+    for i, doc_path in enumerate(doc_paths):
         docid_text, texts, text_spans = next_doc_text_blocks(f_text)
 
-        if '_DF_' not in doc_path and 'discussion_forum' not in doc_path:
-            continue
+        docid = doc_id_from_path(doc_path)
+        assert docid_text == docid
 
         doc_file = open(doc_path, 'r')
         doc_file_text = doc_file.read().decode('utf-8')
         doc_file.close()
 
-        start_pos = len(doc_head) if doc_file_text.startswith(doc_head) else 0
+        if doc_file_text.startswith(doc_head):
+            doc_file_text = doc_file_text[len(doc_head):]
 
-        docid = doc_id_from_path(doc_path)
-        # print docid, docid_text, doc_path
+        if '_DF_' in doc_path or 'discussion_forum' in doc_path:
+            mentions = __find_post_authors_in_doc(docid, doc_file_text, texts, text_spans)
+        else:
+            mentions = __find_nw_author(docid, doc_file_text)
 
-        assert docid_text == docid
+        if mentions:
+            for m in mentions:
+                m.to_edl_file(fout)
 
-        names, spans = __find_post_authors(doc_file_text)
-        for sp in spans:
-            m = Mention(name=doc_file_text[sp[0]:sp[1]], beg_pos=sp[0] - start_pos,
-                        end_pos=sp[1] - start_pos - 1, docid=docid, mention_type='NAM', entity_type='PER')
-            m.to_edl_file(fout)
-            # fout.write('%s\t%s\t%d\t%d\tPER\tNAM\n' % (doc_file_text[sp[0]:sp[1]].encode('utf-8'), docid,
-            #                                            sp[0] - start_pos, sp[1] - start_pos - 1))
-
-        names_set = set()
-        for name in names:
-            names_set.add(name)
-        mention_names, mention_spans = __find_names_in_text_blocks(names_set, texts, text_spans)
-        for mn, ms in izip(mention_names, mention_spans):
-            m = Mention(name=mn, beg_pos=ms[0], end_pos=ms[1], docid=docid, mention_type='NAM', entity_type='PER')
-            m.to_edl_file(fout)
-            # fout.write('%s\t%s\t%d\t%d\tPER\tNAM\n' % (mn, docid, ms[0], ms[1]))
+        if (i + 1) % 1000 == 0:
+            print i + 1
     fout.close()
     f_text.close()
 
@@ -140,6 +163,7 @@ def __extract_name_dict_mentions(name_alias_file, text_file, words_file, dst_adj
     entity_types = names_dict.values()
     names = __tokenize_names(names_dict.keys())
 
+    cnt = 0
     fin0 = open(text_file, 'r')
     fin1 = open(words_file, 'r')
     fout = open(dst_adj_gpe_mentions_file, 'wb')
@@ -148,10 +172,9 @@ def __extract_name_dict_mentions(name_alias_file, text_file, words_file, dst_adj
         if not docid:
             break
 
-        print docid
-
         for text, span in izip(texts, spans):
             text_new = text.replace('al-', 'Al-')
+            text_new = re.sub('[/-]', ' ', text_new)
             words, tags = next_ner_result(fin1)
 
             pos_spans = match_raw_text(text_new, words)
@@ -165,6 +188,10 @@ def __extract_name_dict_mentions(name_alias_file, text_file, words_file, dst_adj
                 m.to_edl_file(fout)
                 # fout.write('%s\t%s\t%d\t%d\t%s\tNAM\n' % (name.encode('utf-8'), docid, beg_pos + span[0],
                 #                                           end_pos + span[0] - 1, entity_types[name_idx]))
+
+        cnt += 1
+        if cnt % 10 == 0:
+            print cnt, docid
     fin0.close()
     fin1.close()
     fout.close()
@@ -237,12 +264,11 @@ def __mention_expand(text_file, mention_file, dst_extra_mentions_file):
     doc_mentions = Mention.load_edl_file(mention_file, True)
     f_text = open(text_file, 'r')
     fout = open(dst_extra_mentions_file, 'wb')
+    cnt = 0
     while True:
         docid, texts, spans = next_doc_text_blocks(f_text)
         if not docid:
             break
-
-        print docid
 
         cur_mentions = doc_mentions.get(docid, list())
         extra_mentions = __find_extra_mentions(cur_mentions, texts, spans)
@@ -250,14 +276,18 @@ def __mention_expand(text_file, mention_file, dst_extra_mentions_file):
             m.to_edl_file(fout)
             # fout.write('%s\t%s\t%d\t%d\t%s\t%s\n' % (m.name.encode('utf-8'), m.docid, m.beg_pos, m.end_pos,
             #                                          m.entity_type, m.mention_type))
+
+        cnt += 1
+        if cnt % 10 == 0:
+            print cnt, docid
     f_text.close()
     fout.close()
 
 
 def main():
     # dataset = 'LDC2015E75'
-    dataset = 'LDC2015E103'
-    # dataset = 'LDC2016E63'
+    # dataset = 'LDC2015E103'
+    dataset = 'LDC2016E63'
 
     datadir = '/home/dhl/data/EDL/'
 

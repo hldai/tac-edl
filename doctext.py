@@ -5,6 +5,8 @@ from itertools import izip
 from bs4 import BeautifulSoup
 import os
 
+from utils import doc_id_from_path
+
 docid_patterns = ['<doc\s+id="(.*?)"', '<DOC\s+id="(.*?)"']
 
 nw_headline_pattern = '<HEADLINE>\s*(.*?)\s*</HEADLINE>'
@@ -48,20 +50,6 @@ def next_doc_text_blocks(fin):
         return docid, texts, spans
     except StopIteration:
         return None, None, None
-
-
-def doc_id_from_path(doc_path):
-    doc_id = ''
-    last_slash = doc_path.rfind('/')
-    last_rslash = doc_path.rfind('\\')
-    beg_pos = last_slash + 1 if last_slash > last_rslash else last_rslash + 1
-    if doc_path.endswith('.nw.xml') or doc_path.endswith('.df.xml'):
-        doc_id = doc_path[beg_pos:-7]
-    elif doc_path.endswith('.xml'):
-        doc_id = doc_path[beg_pos:-4]
-    else:
-        assert False
-    return doc_id
 
 
 # remove quote
@@ -210,10 +198,6 @@ def __in_text_process(prev_text_file, dst_text_file, keep_web_addr=True, split_b
             fout.write('%s\t%d\n' % (docid, len(texts)))
 
         for cur_text, span in izip(texts, spans):
-            # if '&lt;3D' in cur_text:
-            #     print docid
-            #     exit()
-
             cur_text = cur_text.replace('&lt;', '<')
             cur_text = cur_text.replace('&gt;', '>')
             cur_text = cur_text.replace('>', '> ')

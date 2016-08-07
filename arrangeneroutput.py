@@ -1,39 +1,10 @@
 from itertools import izip
 import os
+import re
 
 from utils import match_raw_text, next_ner_result
 from doctext import next_doc_text_blocks
 from mention import Mention
-
-
-def __write_result(docid, text_orig, text_new, text_pos, words, tags, fout):
-    word_span_list = match_raw_text(text_new, words)
-
-    prev_tag = ''
-    beg_pos, end_pos = 0, 0
-
-    def __write_mention():
-        mention_name = text_orig[beg_pos:end_pos].replace('\n', ' ')
-        if '&lt;' in mention_name or 'http:' in mention_name or '&gt;' in mention_name:
-            return
-        fout.write('%s\t%s\t%d\t%d\t%s\t%s\n' % (mention_name.encode('utf-8'), docid, text_pos + beg_pos,
-                                                 text_pos + end_pos - 1, prev_tag, 'NAM'))
-
-    cur_mention_beg_idx = -1
-    for i, (word, tag) in enumerate(izip(words, tags)):
-        if tag != prev_tag:
-            if cur_mention_beg_idx != -1:
-                # print words[cur_mention_beg_idx:i], prev_tag
-                beg_pos, end_pos = word_span_list[cur_mention_beg_idx][0], word_span_list[i - 1][1]
-                __write_mention()
-                cur_mention_beg_idx = -1
-            if tag != 'O':
-                cur_mention_beg_idx = i
-        prev_tag = tag
-
-    if cur_mention_beg_idx != -1:
-        beg_pos, end_pos = word_span_list[cur_mention_beg_idx][0], word_span_list[-1][1]
-        __write_mention()
 
 
 def __fix_entity_types(mentions):
@@ -93,14 +64,12 @@ def __write_mentions(mentions, fout):
                                                  m.entity_type, m.mention_type))
 
 
-def __arrange_ner_result(doc_text_file, ner_result_files, dst_tac_edl_file):
-    print ner_result_files
-
+def __arrange_ner_result(doc_text_file, ner_file0, ner_file1, dst_tac_edl_file):
     f_text = open(doc_text_file, 'r')
-    f_ners = list()
-    for f in ner_result_files:
-        f_ners.append(open(f, 'r'))
+    f_ner0 = open(ner_file0, 'r')
+    f_ner1 = open(ner_file1, 'r')
     fout = open(dst_tac_edl_file, 'wb')
+    cnt = 0
     while True:
         docid, texts, spans = next_doc_text_blocks(f_text)
 
@@ -110,25 +79,32 @@ def __arrange_ner_result(doc_text_file, ner_result_files, dst_tac_edl_file):
         mentions = list()
         for text, span in izip(texts, spans):
             text_new = text.replace('al-', 'Al-')
-            for f_ner in f_ners:
-                words, tags = next_ner_result(f_ner)
-                cur_mentions = __get_mentions(docid, text, text_new, span[0], words, tags)
-                for m in cur_mentions:
-                    if not __mention_exist(m, mentions):
-                        mentions.append(m)
+            words, tags = next_ner_result(f_ner0)
+            mentions = __get_mentions(docid, text, text_new, span[0], words, tags)
+
+            text_new = re.sub('[/-]', ' ', text_new)
+            words, tags = next_ner_result(f_ner1)
+            tmp_mentions = __get_mentions(docid, text, text_new, span[0], words, tags)
+            for m in tmp_mentions:
+                if not __mention_exist(m, mentions):
+                    mentions.append(m)
         for m in mentions:
             m.to_edl_file(fout)
+
+        cnt += 1
+        if cnt % 1000 == 0:
+            print cnt, docid
         # __write_mentions(mentions, fout)
     f_text.close()
-    for f in f_ners:
-        f.close()
+    f_ner0.close()
+    f_ner1.close()
     fout.close()
 
 
 def main():
     # dataset = 'LDC2015E75'
-    dataset = 'LDC2015E103'
-    # dataset = 'LDC2016E63'
+    # dataset = 'LDC2015E103'
+    dataset = 'LDC2016E63'
     datadir = '/home/dhl/data/EDL/'
 
     doc_text_file = os.path.join(datadir, dataset, 'data/doc-text.txt')
@@ -136,7 +112,7 @@ def main():
     ner_result_file1 = os.path.join(datadir, dataset, 'output/ner-result1.txt')
     dst_mention_file = os.path.join(datadir, dataset, 'output/ner-mentions.tab')
 
-    __arrange_ner_result(doc_text_file, [ner_result_file0, ner_result_file1], dst_mention_file)
+    __arrange_ner_result(doc_text_file, ner_result_file0, ner_result_file1, dst_mention_file)
 
 if __name__ == '__main__':
     main()

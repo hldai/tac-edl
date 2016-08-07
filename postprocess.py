@@ -54,6 +54,45 @@ def __nil_clustering(nom_dict_file, edl_file, dst_file):
     Mention.save_as_edl_file(all_mentions, dst_file)
 
 
+def __get_max_nil_id(mentions):
+    max_id = 0
+    for m in mentions:
+        if m.kbid.startswith('NIL'):
+            cur_id = int(m.kbid[3:])
+            if cur_id > max_id:
+                max_id = cur_id
+    return max_id
+
+
+def __link_nom(doc_mentions_dict, cur_max_nil_id):
+    for docid, mentions in doc_mentions_dict.iteritems():
+        mentions.sort(key=lambda x: x.beg_pos)
+        for i, m, in enumerate(mentions):
+            if i < len(mentions) - 1 and mentions[i + 1].entity_type == 'PER':
+                m.kbid = mentions[i + 1].kbid
+                continue
+            if i > 0 and mentions[i - 1].entity_type == 'PER':
+                m.kbid = mentions[i - 1].kbid
+                continue
+
+
+def __fix_types(mentions):
+    for m in mentions:
+        if m.entity_type.startswith('PER'):
+            m.entity_type = 'PER'
+
+
+def __post_process(cur_edl_file, new_edl_file):
+    mentions = Mention.load_edl_file(cur_edl_file)
+
+    # max_nil_id = __get_max_nil_id(mentions)
+    # print max_nil_id
+    # doc_mentions_dict = Mention.arrange_mentions_by_docid(mentions)
+    # __link_nom(doc_mentions_dict, max_nil_id)
+    __fix_types(mentions)
+    Mention.save_as_edl_file(mentions, new_edl_file)
+
+
 def main():
     # dataset = 'LDC2015E75'
     dataset = 'LDC2015E103'
@@ -61,9 +100,10 @@ def main():
 
     datadir = '/home/dhl/data/EDL/'
     nom_dict_file = os.path.join(datadir, 'res/nom-dict-edit.txt')
-    edl_file = os.path.join(datadir, dataset, 'output/sys-link-sm.tab')
-    dst_file = os.path.join(datadir, dataset, 'output/sys-link-sm-nc.tab')
-    __nil_clustering(nom_dict_file, edl_file, dst_file)
+    cur_edl_file = os.path.join(datadir, dataset, 'output/sys-link-sm.tab')
+    new_edl_file = os.path.join(datadir, dataset, 'output/sys-link-sm-pp.tab')
+    # __nil_clustering(nom_dict_file, edl_file, dst_file)
+    __post_process(cur_edl_file, new_edl_file)
 
 if __name__ == '__main__':
     main()
