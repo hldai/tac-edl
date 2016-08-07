@@ -60,33 +60,7 @@ def gen_nom_dict():
     fout.close()
 
 
-def __gen_docs_list():
-    # docs_dir = '/home/dhl/data/EDL/LDC2015E103/data/eng-docs'
-    # docs_list_file = '/home/dhl/data/EDL/LDC2015E103/data/eng-docs-list.txt'
-
-    docs_dir = '/home/dhl/data/EDL/LDC2016E63/data/eng'
-    docs_list_file = '/home/dhl/data/EDL/LDC2016E63/data/eng-docs-list.txt'
-
-    # docs_dir = '/home/dhl/data/EDL/LDC2015E75/data/eng-docs'
-    # docs_list_file = '/home/dhl/data/EDL/LDC2015E75/data/eng-docs-list.txt'
-
-    dir_list = [docs_dir]
-    fout = open(docs_list_file, 'wb')
-    while dir_list:
-        d = dir_list.pop()
-        file_names = [f for f in os.listdir(d)]
-        file_names.sort()
-        for f in file_names:
-            cur_path = os.path.join(d, f)
-            if os.path.isdir(cur_path):
-                dir_list.append(cur_path)
-            if os.path.isfile(cur_path):
-                assert cur_path.endswith('xml')
-                fout.write('%s\n' % cur_path)
-    fout.close()
-
-
-def fix_edl_file_positions():
+def __fix_edl_file_positions():
     edl_file = 'e:/el/LDC2015E75/data/tac_kbp_2015_tedl_training_gold_standard_entity_mentions.tab'
     dst_edl_file = 'e:/el/LDC2015E75/data/tac_kbp_2015_tedl_training_gold_fixed.tab'
 
@@ -105,10 +79,37 @@ def fix_edl_file_positions():
     fout.close()
 
 
+def __gen_docs_list():
+    dataset = 'LDC2015E75'
+    dataset = 'LDC2015E103'
+    dataset = 'LDC2016E63'
+
+    # datadir = '/home/dhl/data/EDL'
+    datadir = 'e:/data/edl'
+
+    docs_dir = os.path.join(datadir, dataset, 'data/eng')
+    docs_list_file = os.path.join(datadir, dataset, 'data/eng-docs-list-win.txt')
+
+    dir_list = [docs_dir]
+    fout = open(docs_list_file, 'wb')
+    while dir_list:
+        d = dir_list.pop()
+        file_names = [f for f in os.listdir(d)]
+        file_names.sort()
+        for f in file_names:
+            cur_path = os.path.join(d, f)
+            if os.path.isdir(cur_path):
+                dir_list.append(cur_path)
+            if os.path.isfile(cur_path):
+                assert cur_path.endswith('xml')
+                fout.write('%s\n' % cur_path)
+    fout.close()
+
+
 def main():
     # gen_nom_dict()
     __gen_docs_list()
-    # fix_edl_file_positions()
+    # __fix_edl_file_positions()
 
 if __name__ == '__main__':
     main()

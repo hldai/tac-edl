@@ -222,6 +222,7 @@ def main():
     # dataset = 'LDC2016E63'
 
     datadir = '/home/dhl/data/EDL'
+    # datadir = 'e:/data/edl'
 
     doc_list_file = os.path.join(datadir, dataset, 'data/eng-docs-list.txt')
     dst_text_file0 = os.path.join(datadir, dataset, 'data/doc-text.txt')

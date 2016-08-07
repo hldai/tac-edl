@@ -98,7 +98,8 @@ def main():
     dataset = 'LDC2015E103'
     # dataset = 'LDC2016E63'
 
-    datadir = '/home/dhl/data/EDL/'
+    # datadir = '/home/dhl/data/EDL/'
+    datadir = 'e:/data/edl'
     nom_dict_file = os.path.join(datadir, 'res/nom-dict-edit.txt')
     cur_edl_file = os.path.join(datadir, dataset, 'output/sys-link-sm.tab')
     new_edl_file = os.path.join(datadir, dataset, 'output/sys-link-sm-pp.tab')
