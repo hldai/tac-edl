@@ -1,7 +1,8 @@
 import gzip
+from itertools import izip
 
 from mention import Mention
-from itertools import izip
+from utils import doc_id_from_path
 
 
 def __get_mids(edl_gold_file):
@@ -167,6 +168,25 @@ def __get_mid_name():
     fin.close()
 
 
+def __missing_docs_in_edl_file():
+    datadir = 'e:/data/edl'
+    edl_file = '%s/LDC2016E63/output/all-mentions.tab' % datadir
+    doc_list_file = '%s/LDC2016E63/data/eng-docs-list-win.txt' % datadir
+
+    mentions = Mention.load_edl_file(edl_file)
+    docids = set()
+    for m in mentions:
+        docids.add(m.docid)
+
+    f = open(doc_list_file, 'r')
+    for line in f:
+        doc_path = line.rstrip()
+        docid = doc_id_from_path(doc_path)
+        if docid not in docids:
+            print docid
+    f.close()
+
+
 def main():
     # __get_type_map()
     # __gold_mention_insight()
@@ -174,6 +194,7 @@ def main():
     # __type_eval()
     # __pseudo_link()
     # __get_mid_name()
+    # __missing_docs_in_edl_file()
     pass
 
 if __name__ == '__main__':

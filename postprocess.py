@@ -76,10 +76,30 @@ def __link_nom(doc_mentions_dict, cur_max_nil_id):
                 continue
 
 
-def __fix_types(mentions):
+def __fix_special_types(mentions):
     for m in mentions:
         if m.entity_type.startswith('PER'):
             m.entity_type = 'PER'
+
+
+def __fix_type_diff_of_same_kbid(mentions):
+    mention_groups = __group_mentions_by_kbid(mentions)
+    for kbid, ms in mention_groups.iteritems():
+        type_cnts = dict()
+        for m in ms:
+            cnt = type_cnts.get(m.entity_type, 0)
+            type_cnts[m.entity_type] = cnt + 1
+        if len(type_cnts) < 2:
+            continue
+
+        major_type = ''
+        max_cnt = 0
+        for t, cnt in type_cnts.iteritems():
+            if cnt > max_cnt:
+                max_cnt = cnt
+                major_type = t
+        for m in ms:
+            m.entity_type = major_type
 
 
 def __post_process(cur_edl_file, new_edl_file):
@@ -89,8 +109,9 @@ def __post_process(cur_edl_file, new_edl_file):
     # print max_nil_id
     # doc_mentions_dict = Mention.arrange_mentions_by_docid(mentions)
     # __link_nom(doc_mentions_dict, max_nil_id)
-    __fix_types(mentions)
-    Mention.save_as_edl_file(mentions, new_edl_file)
+    __fix_special_types(mentions)
+    __fix_type_diff_of_same_kbid(mentions)
+    Mention.save_as_edl_file(mentions, new_edl_file, runid='WednesdayGo5')
 
 
 def main():

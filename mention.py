@@ -23,15 +23,15 @@ class Mention:
         fout.close()
 
     @staticmethod
-    def save_as_edl_file(mentions, dst_file):
+    def save_as_edl_file(mentions, dst_file, runid='ZJU'):
         fout = open(dst_file, 'wb')
         for m in mentions:
-            m.to_edl_file(fout)
+            m.to_edl_file(fout, runid)
         fout.close()
 
-    def to_edl_file(self, fout):
+    def to_edl_file(self, fout, runid='ZJU'):
         fout.write('%s\t%s\t%s\t%s:%d-%d\t%s\t%s\t%s\t1.0\n' % (
-            'ZJU', self.mention_id, self.name.encode('utf-8'), self.docid, self.beg_pos,
+            runid, self.mention_id, self.name.encode('utf-8'), self.docid, self.beg_pos,
             self.end_pos, self.kbid, self.entity_type, self.mention_type))
 
     @staticmethod
