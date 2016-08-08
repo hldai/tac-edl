@@ -81,8 +81,8 @@ def __fix_edl_file_positions():
 
 def __gen_docs_list():
     dataset = 'LDC2015E75'
-    dataset = 'LDC2015E103'
-    dataset = 'LDC2016E63'
+    # dataset = 'LDC2015E103'
+    # dataset = 'LDC2016E63'
 
     # datadir = '/home/dhl/data/EDL'
     datadir = 'e:/data/edl'

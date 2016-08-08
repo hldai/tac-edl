@@ -70,14 +70,14 @@ def __filter_mid_alias_cnt_file():
 
 def __read_str_with_byte_len(f):
     num_bytes = np.fromfile(f, '>i1', 1)[0]
-    # print num_bytes
     return f.read(num_bytes)
 
 
 def __candidates_dict():
-    candidates_dict_file = '/home/dhl/data/EDL/tmpres/candidates-dict.bin'
+    candidates_dict_file = 'e:/data/edl/res/prog-gen/candidates-dict.bin'
+    # candidates_dict_file = '/home/dhl/data/EDL/tmpres/candidates-dict.bin'
 
-    f = open(candidates_dict_file, 'r')
+    f = open(candidates_dict_file, 'rb')
     num_names = np.fromfile(f, '>i4', 1)[0]
     total_num_candidates = np.fromfile(f, '>i4', 1)[0]
     print num_names, total_num_candidates
@@ -92,10 +92,13 @@ def __candidates_dict():
             cmns = np.fromfile(f, '>f4', 1)[0]
             cur_candidates.append((mid, cmns))
 
-        if name == 'clinton':
+        if name == 'ccp':
             for x in cur_candidates:
                 print x[0], x[1]
             break
+
+        if (i + 1) % 1000000 == 0:
+            print i + 1
     f.close()
 
 

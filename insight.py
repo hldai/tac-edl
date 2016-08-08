@@ -153,14 +153,17 @@ def __pseudo_link():
 
 def __get_mid_name():
     fb_name_file = '/media/dhl/Data/data/el/tmpres/freebase/full_freebase_name_en.txt'
-    dst_id = '09b6zr'
+    fb_name_file = 'e:/data/edl/tmpres/freebase/full_freebase_name_en.txt'
+    fb_name_file = 'e:/data/edl/tmpres/full_freebase_name_alias_merged_en_lc_ord_mid_name.txt'
+    dst_id = '02189'
 
     dst_beg = dst_id + '\t'
     fin = open(fb_name_file)
     for i, line in enumerate(fin):
         if line.startswith(dst_beg):
             print line
-            break
+            # print 'end'
+            # break
 
         if (i + 1) % 10000000 == 0:
             print i + 1
@@ -193,7 +196,7 @@ def main():
     # __check_mention_fb_types()
     # __type_eval()
     # __pseudo_link()
-    # __get_mid_name()
+    __get_mid_name()
     # __missing_docs_in_edl_file()
     pass
 

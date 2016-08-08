@@ -202,6 +202,10 @@ def __filter_fb_types():
     fout.close()
 
 
+def __filter_fb_types_partial():
+    print 'filter'
+
+
 def __fb_types_to_entity_types():
     mid_fb_type_file = 'e:/el/res/freebase/mid-fb-type-filtered.txt'
     dst_mid_entity_type_file = 'e:/el/res/freebase/mid-entity-type.txt'

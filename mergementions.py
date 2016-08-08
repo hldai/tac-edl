@@ -30,11 +30,12 @@ def __merge_mentions(mention_file_list, dst_result_file):
 
 
 def main():
-    # dataset = 'LDC2015E75'
+    dataset = 'LDC2015E75'
     # dataset = 'LDC2015E103'
-    dataset = 'LDC2016E63'
+    # dataset = 'LDC2016E63'
 
-    datadir = '/home/dhl/data/EDL/'
+    # datadir = '/home/dhl/data/EDL/'
+    datadir = 'e:/data/edl'
 
     ner_mentions_file = os.path.join(datadir, dataset, 'output/ner-mentions.tab')
     name_dict_mentions_file = os.path.join(datadir, dataset, 'output/name-dict-mentions.tab')
