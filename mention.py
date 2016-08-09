@@ -19,7 +19,8 @@ class Mention:
     def write_mentions(mentions, dst_file):
         fout = open(dst_file, 'wb')
         for m in mentions:
-            fout.write('%s\t%d\t%d\t%s\t%s\n' % (m.docid, m.beg_pos, m.end_pos, m.name.encode('utf-8'), m.entity_type))
+            fout.write('%s\t%d\t%d\t%s\t%s\n' % (m.docid, m.beg_pos, m.end_pos, m.name.encode('utf-8'),
+                                                 m.entity_type))
         fout.close()
 
     @staticmethod
@@ -29,10 +30,15 @@ class Mention:
             m.to_edl_file(fout, runid)
         fout.close()
 
-    def to_edl_file(self, fout, runid='ZJU'):
-        fout.write('%s\t%s\t%s\t%s:%d-%d\t%s\t%s\t%s\t1.0\n' % (
-            runid, self.mention_id, self.name.encode('utf-8'), self.docid, self.beg_pos,
-            self.end_pos, self.kbid, self.entity_type, self.mention_type))
+    @staticmethod
+    def group_mentions_by_kbid(mentions):
+        kbid_mentions_dict = dict()
+        for m in mentions:
+            cur_mentions = kbid_mentions_dict.get(m.kbid, list())
+            if not cur_mentions:
+                kbid_mentions_dict[m.kbid] = cur_mentions
+            cur_mentions.append(m)
+        return kbid_mentions_dict
 
     @staticmethod
     def load_edl_file(filename, arrange_by_docid=False):
@@ -52,6 +58,11 @@ class Mention:
         if arrange_by_docid:
             return Mention.arrange_mentions_by_docid(mentions)
         return mentions
+
+    def to_edl_file(self, fout, runid='ZJU'):
+        fout.write('%s\t%s\t%s\t%s:%d-%d\t%s\t%s\t%s\t1.0\n' % (
+            runid, self.mention_id, self.name.encode('utf-8'), self.docid, self.beg_pos,
+            self.end_pos, self.kbid, self.entity_type, self.mention_type))
 
     def __init__(self, name=u'', beg_pos=-1, end_pos=-1, docid='', mention_type='',
                  entity_type='', kbid='NIL', mention_id='TEDL_000001'):

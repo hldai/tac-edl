@@ -1,24 +1,19 @@
+from mention import Mention
 
 
-def __get_mid_name():
-    fb_name_file = '/media/dhl/Data/data/el/tmpres/freebase/full_freebase_name_en.txt'
-    dst_id = '09b6zr'
-
-    dst_beg = dst_id + '\t'
-    fin = open(fb_name_file)
-    for i, line in enumerate(fin):
-        if line.startswith(dst_beg):
-            print line
-            break
-
-        if (i + 1) % 10000000 == 0:
-            print i + 1
-
-    fin.close()
+def __get_mid_types_in_dataset():
+    edl_file = 'e:/data/edl/LDC2015E75/data/gold-eng-mentions.tab'
+    mentions = Mention.load_edl_file(edl_file)
+    kbid_mentions = Mention.arrange_mentions_by_docid(mentions)
+    for kbid, ms in kbid_mentions.iteritems():
+        print kbid
+        for m in ms:
+            print '\t%s' % m.name,
+        print
 
 
 def main():
-    __get_mid_name()
+    __get_mid_types_in_dataset()
     pass
 
 if __name__ == '__main__':
