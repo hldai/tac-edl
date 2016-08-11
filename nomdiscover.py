@@ -254,13 +254,14 @@ def main():
     # dataset = 'LDC2015E103'
     dataset = 'LDC2016E63'
 
-    datadir = '/home/dhl/data/EDL/'
+    # datadir = '/home/dhl/data/EDL/'
+    datadir = 'e:/data/edl'
     nom_dict_file = os.path.join(datadir, 'res/nom-dict-edit.txt')
 
     text_file = os.path.join(datadir, dataset, 'data/doc-text.txt')
     tagged_words_file = os.path.join(datadir, dataset, 'data/doc-text-pos.txt')
     tagged_words_file = os.path.join(datadir, dataset, 'data/doc-text-words-pos.txt')
-    doc_paths_file = os.path.join(datadir, dataset, 'data/eng-docs-list.txt')
+    doc_paths_file = os.path.join(datadir, dataset, 'data/eng-docs-list-win.txt')
     dst_nom_mentions_file = os.path.join(datadir, dataset, 'output/nom-mentions.tab')
 
     edl_gold_file = None

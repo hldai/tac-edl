@@ -2,15 +2,17 @@ import gzip
 
 
 def __get_mid_name():
-    fb_name_file = '/media/dhl/Data/data/el/tmpres/freebase/full_freebase_name_en.txt'
-    dst_id = '09b6zr'
+    datadir = 'e:/data/edl'
+    fb_name_file = '%s/tmpres/freebase/full_freebase_name_en.txt' % datadir
+    kbid = '02189'
 
-    dst_beg = dst_id + '\t'
-    fin = open(fb_name_file)
+    beg_str = '%s\t' % kbid
+    # fin = gzip.open(fb_name_file)
+    fin = open(fb_name_file, 'rb')
     for i, line in enumerate(fin):
-        if line.startswith(dst_beg):
-            print line
-            break
+        if line.startswith(beg_str):
+            print line,
+            # break
 
         if (i + 1) % 10000000 == 0:
             print i + 1
@@ -33,8 +35,9 @@ def __find_entity_types():
 
 
 def main():
-    # __get_mid_name()
-    __find_entity_types()
+    __get_mid_name()
+    # __find_entity_types()
+    pass
 
 if __name__ == '__main__':
     main()

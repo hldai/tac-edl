@@ -14,7 +14,7 @@ def __write_link_errors(link_errors, dst_file):
 def __write_type_errors(type_errors, dst_file):
     fout = open(dst_file, 'wb')
     for gm, sm in type_errors:
-        fout.write('%s\t%s\t%s\t%s\t%s\t%s\n' % (gm.docid, gm.name, gm.kbid, sm.kbid, gm.entity_type,
+        fout.write('%s\t%s\t%s\t%s\t%s\t%s\n' % (gm.docid, gm.name.encode('utf-8'), gm.kbid, sm.kbid, gm.entity_type,
                                                  sm.entity_type))
     fout.close()
 
@@ -148,28 +148,26 @@ def __find_type_errors(gold_edl_file, sys_edl_file):
 
 
 def main():
-    dataset = 'LDC2015E75'
+    # dataset = 'LDC2015E75'
     # dataset = 'LDC2015E103'
-    # dataset = 'LDC2016E63'
-    require_type_match = True
+    dataset = 'LDC2016E63'
+    require_type_match = False
     require_kbid_match = True
 
     # data_dir = '/home/dhl/data/EDL/'
     data_dir = 'e:/data/edl'
 
     gold_edl_file = os.path.join(data_dir, dataset, 'data/gold-eng-mentions.tab')
-    # gold_edl_file = os.path.join(data_dir, dataset, 'data/gold-eng-nom-mentions.tab')
-    # sys_ed_file = os.path.join(data_dir, dataset, 'output/post-authors.tab')
-    # sys_ed_file = os.path.join(data_dir, dataset, 'output/ner-mentions.tab')
     sys_ed_file = os.path.join(data_dir, dataset, 'output/all-mentions.tab')
+    # sys_edl_file = os.path.join(data_dir, dataset, 'output/sys-link-sm.tab')
     sys_edl_file = os.path.join(data_dir, dataset, 'output/sys-link-sm-pp-ft.tab')
     false_pos_file = os.path.join(data_dir, dataset, 'error/fp.txt')
     false_neg_file = os.path.join(data_dir, dataset, 'error/fn.txt')
     link_error_file = os.path.join(data_dir, dataset, 'error/link-error.txt')
     type_error_file = os.path.join(data_dir, dataset, 'error/type-error.txt')
 
-    # __evaluate_ed(gold_edl_file, sys_ed_file, false_neg_file, false_pos_file, require_type_match)
-    __evaluate_edl(gold_edl_file, sys_edl_file, require_type_match, link_error_file, type_error_file)
+    __evaluate_ed(gold_edl_file, sys_ed_file, false_neg_file, false_pos_file, require_type_match)
+    # __evaluate_edl(gold_edl_file, sys_edl_file, require_type_match, link_error_file, type_error_file)
     # __find_type_errors(gold_edl_file, sys_edl_file)
 
 

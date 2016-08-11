@@ -30,8 +30,8 @@ def __merge_mentions(mention_file_list, dst_result_file):
 
 
 def main():
-    dataset = 'LDC2015E75'
-    # dataset = 'LDC2015E103'
+    # dataset = 'LDC2015E75'
+    dataset = 'LDC2015E103'
     # dataset = 'LDC2016E63'
 
     # datadir = '/home/dhl/data/EDL/'
@@ -51,7 +51,7 @@ def main():
     # __merge_mentions([nom_mentions_file], all_mentions_tac_edl_file)
     # __merge_mentions([name_dict_mentions_file, ner_mentions_file, post_author_file,
     #                   extra_mentions_file], all_mentions_tac_edl_file)
-    __merge_mentions([name_dict_mentions_file, nom_mentions_file, post_author_file, ner_mentions_file,
+    __merge_mentions([post_author_file, name_dict_mentions_file, nom_mentions_file, ner_mentions_file,
                       extra_mentions_file], all_mentions_tac_edl_file)
 
 if __name__ == '__main__':

@@ -120,37 +120,6 @@ def __type_eval():
     print float(hitcnt) / cnt
 
 
-def __pseudo_link():
-    dataset = 103
-    if dataset == 75:
-        gold_mention_file = 'e:/el/LDC2015E75/data/tac_kbp_2015_tedl_training_gold_fixed.tab'
-        sys_mention_file = 'e:/el/LDC2015E75/data/all-mentions-tac.txt'
-        dst_file = 'e:/el/LDC2015E75/data/all-mentions-tac-linked.txt'
-    else:
-        gold_mention_file = 'e:/el/LDC2015E103/data/tac_kbp_2015_tedl_' \
-                            'evaluation_gold_standard_entity_mentions.tab'
-        sys_mention_file = 'e:/el/LDC2015E103/data/all-mentions-tac.txt'
-        dst_file = 'e:/el/LDC2015E103/data/all-mentions-tac-linked.txt'
-
-    gold_mentions_docs = Mention.load_edl_file(gold_mention_file, arrange_by_docid=True)
-    sys_mentions_docs = Mention.load_edl_file(sys_mention_file, arrange_by_docid=True)
-
-    cnt = 0
-    fout = open(dst_file, 'wb')
-    for docid, sys_mentions in sys_mentions_docs.iteritems():
-        gold_mentions = gold_mentions_docs.get(docid, list())
-        for sm in sys_mentions:
-            for gm in gold_mentions_docs:
-                if gm.docid == sm.docid and gm.beg_pos == sm.beg_pos and gm.end_pos == sm.end_pos:
-                    sm.mid = gm.mid
-            fout.write('%s\t%s_%07d\t%s\t%s:%s-%s\t%s\t%s\t%s\n' % (
-                'ZJU', 'EDL15', cnt + 1, sm.name.encode('utf-8'),
-                sm.docid, sm.beg_pos, sm.end_pos, sm.mid,
-                sm.entity_type, sm.mention_type))
-            cnt += 1
-    fout.close()
-
-
 def __missing_docs_in_edl_file():
     datadir = 'e:/data/edl'
     edl_file = '%s/LDC2016E63/output/all-mentions.tab' % datadir
@@ -175,7 +144,6 @@ def main():
     # __gold_mention_insight()
     # __check_mention_fb_types()
     # __type_eval()
-    # __pseudo_link()
     # __missing_docs_in_edl_file()
     pass
 

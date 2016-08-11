@@ -94,7 +94,7 @@ def __fix_entity_types_by_mid(mid_type_file, mentions):
         if m.kbid.startswith('m.'):
             sys_type = mid_type_dict.get(m.kbid[2:], '')
             if sys_type:
-                print sys_type
+                # print sys_type
                 m.entity_type = sys_type
 
 
@@ -124,23 +124,14 @@ def __fix_type_diff_of_same_kbid(mentions):
             m.entity_type = major_type
 
 
-def __post_process(mid_type_file, cur_edl_file, new_edl_file):
-    mentions = Mention.load_edl_file(cur_edl_file)
-
-    # max_nil_id = __get_max_nil_id(mentions)
-    # print max_nil_id
-    # doc_mentions_dict = Mention.arrange_mentions_by_docid(mentions)
-    # __link_nom(doc_mentions_dict, max_nil_id)
-    __fix_special_types(mentions)
-    # __fix_type_diff_of_same_kbid(mentions)
-    __fix_entity_types_by_mid(mid_type_file, mentions)
-    Mention.save_as_edl_file(mentions, new_edl_file, runid='WednesdayGo5')
+def __validate_output():
+    print 'TODO'
 
 
 def main():
-    dataset = 'LDC2015E75'
+    # dataset = 'LDC2015E75'
     # dataset = 'LDC2015E103'
-    # dataset = 'LDC2016E63'
+    dataset = 'LDC2016E63'
 
     # datadir = '/home/dhl/data/EDL/'
     datadir = 'e:/data/edl'
@@ -149,7 +140,14 @@ def main():
     cur_edl_file = os.path.join(datadir, dataset, 'output/sys-link-sm.tab')
     new_edl_file = os.path.join(datadir, dataset, 'output/sys-link-sm-pp-ft.tab')
     # __nil_clustering(nom_dict_file, edl_file, dst_file)
-    __post_process(mid_type_file, cur_edl_file, new_edl_file)
+    mentions = Mention.load_edl_file(cur_edl_file)
+
+    # __link_nom(doc_mentions_dict, max_nil_id)
+    __fix_special_types(mentions)
+    __fix_type_diff_of_same_kbid(mentions)
+    __fix_entity_types_by_mid(mid_type_file, mentions)
+    Mention.save_as_edl_file(mentions, new_edl_file, runid='WednesdayGo2')
+    __validate_output()
 
 if __name__ == '__main__':
     main()

@@ -1,12 +1,46 @@
 import gzip
+import os
 
 num_lines_fb = 3130753066
+
+
+class FbToTacTypeMap:
+    def __init__(self, fb_to_tac_type_file):
+        self.fb_types_list = list()
+        self.tac_type_list = list()
+        fin = open(fb_to_tac_type_file, 'r')
+        for line in fin:
+            tac_type = line.rstrip()
+            self.tac_type_list.append(tac_type)
+
+            line = fin.next()
+            cur_fb_types = line.rstrip().split()
+            self.fb_types_list.append(cur_fb_types)
+        fin.close()
+
+    def get_tac_type(self, cur_entity_fb_types):
+        for i, fb_types in enumerate(self.fb_types_list):
+            for ft in fb_types:
+                if ft in cur_entity_fb_types:
+                    return self.tac_type_list[i]
+        return 'UNKNOW'
 
 
 filter_types = ['music.single', 'music.recording', 'base.type_ontology.animate',
                 'base.type_ontology.agent', 'base.type_ontology.inanimate',
                 'music.release_track', 'common.topic', 'base.type_ontology.non_agent',
                 'base.type_ontology.abstract', 'music.track_contribution']
+
+
+# hand crafted mid to type
+def __load_hf_mid_types(hf_mid_type_file):
+    mid_type_dict = dict()
+    f = open(hf_mid_type_file, 'r')
+    for line in f:
+        vals = line.rstrip().split('\t')
+        mid_type_dict[vals[0]] = vals[1]
+    f.close()
+    return mid_type_dict
 
 
 def __gen_fb_types_file(triples_file, dst_type_file):
@@ -185,67 +219,79 @@ def __gen_predicates():
     # print predicate_set
 
 
-def __filter_fb_types():
-    keep_types = {'people.person', 'location.country', 'location.administrative_division',
-                  'location.statistical_region', 'organization.organization',
-                  'location.location', 'architecture.structure'}
-    fin = gzip.open('e:/el/res/freebase/mid-fb-type.gz', 'r')
-    fout = open('e:/el/res/freebase/mid-fb-type-filtered.txt', 'wb')
-    for i, line in enumerate(fin):
-        vals = line[:-1].split('\t')
-        if vals[1] in keep_types:
-            fout.write('%s\t%s\n' % (vals[0], vals[1]))
+def __fb_types_to_tac_types():
+    datadir = 'e:/data/edl'
+    fb_to_tac_type_file = os.path.join(datadir, 'res/fb-types-to-tac-types.txt')
+    mid_fb_type_file = os.path.join(datadir, 'res/freebase/mid-fb-type.gz')
+    hf_mid_type_file = os.path.join(datadir, 'res/handcraft/mid-type.txt')
+    dst_mid_entity_type_file = os.path.join(datadir, 'res/freebase/mid-entity-type.txt')
 
-        if (i + 1) % 1000000 == 0:
+    hf_mid_type_dict = __load_hf_mid_types(hf_mid_type_file)
+    type_map = FbToTacTypeMap(fb_to_tac_type_file)
+
+    fin = gzip.open(mid_fb_type_file, 'r')
+    fout = open(dst_mid_entity_type_file, 'wb')
+    pre_kbid = ''
+    fb_types = list()
+    for i, line in enumerate(fin):
+        vals = line.rstrip().split('\t')
+        if pre_kbid and pre_kbid != vals[0]:
+            cur_tac_type = hf_mid_type_dict.get(pre_kbid, '')
+            if cur_tac_type:
+                fout.write('%s\t%s\n' % (pre_kbid, cur_tac_type))
+            else:
+                cur_tac_type = type_map.get_tac_type(fb_types)
+                if cur_tac_type != 'UNKNOW':
+                    fout.write('%s\t%s\n' % (pre_kbid, cur_tac_type))
+            fb_types = list()
+
+        pre_kbid = vals[0]
+        fb_types.append(vals[1])
+
+        if (i + 1) % 10000000 == 0:
+            print i + 1
+        # if i == 10000:
+        #     break
+
+    cur_tac_type = type_map.get_tac_type(fb_types)
+    if cur_tac_type != 'UNKNOW':
+        fout.write('%s\t%s\n' % (pre_kbid, cur_tac_type))
+
+    fin.close()
+    fout.close()
+
+
+def __filter_fb_names():
+    datadir = 'e:/data/edl'
+    fb_name_file = '%s/tmpres/freebase/freebase-names-all.gz' % datadir
+    dst_file = '%s/tmpres/freebase/freebase-names.txt' % datadir
+
+    mid_head = '<http://rdf.freebase.com/ns/m.'
+
+    f = gzip.open(fb_name_file, 'r')
+    fout = open(dst_file, 'wb')
+    for i, line in enumerate(f):
+        if line.startswith(mid_head):
+            vals = line.split('\t')
+            fout.write('%s\t%s\n' % (vals[0][len(mid_head):-1], vals[2]))
+            # break
+        if (i + 1) % 10000000 == 0:
+            print i + 1
+    f.close()
+    fout.close()
+
+
+def __gen_fb_en_names():
+    datadir = 'e:/data/edl'
+    fb_names_file = '%s/tmpres/freebase/freebase-names.gz' % datadir
+    fin = gzip.open(fb_names_file, 'r')
+    for i, line in enumerate(fin):
+        if line.endswith('@en\n'):
+            print line
+            break
+        if (i + 1) % 10000000 == 0:
             print i + 1
     fin.close()
-    fout.close()
-
-
-def __filter_fb_types_partial():
-    print 'filter'
-
-
-def __fb_types_to_entity_types():
-    mid_fb_type_file = 'e:/el/res/freebase/mid-fb-type-filtered.txt'
-    dst_mid_entity_type_file = 'e:/el/res/freebase/mid-entity-type.txt'
-
-    fb_types = ['people.person', 'location.country', 'location.administrative_division',
-                'location.statistical_region', 'organization.organization', 'location.location',
-                'architecture.structure']
-    type_idx_dict = dict()
-    for i, fb_type in enumerate(fb_types):
-        type_idx_dict[fb_type] = i
-
-    fb_type_mids = [set() for _ in xrange(len(fb_types))]
-
-    print 'loading fb types ...'
-    all_mids = set()
-    fin = open(mid_fb_type_file, 'r')
-    for i, line in enumerate(fin):
-        vals = line[:-1].split('\t')
-        idx = type_idx_dict[vals[1]]
-        fb_type_mids[idx].add(vals[0])
-        all_mids.add(vals[0])
-        # if i == 1000:
-        #     break
-    fin.close()
-
-    fout = open(dst_mid_entity_type_file, 'wb')
-    for mid in all_mids:
-        if mid in fb_type_mids[0]:
-            fout.write('%s\t%s\n' % (mid, 'PER'))
-        elif mid in fb_type_mids[1] or mid in fb_type_mids[2] or mid in fb_type_mids[3]:
-            fout.write('%s\t%s\n' % (mid, 'GPE'))
-        elif mid in fb_type_mids[4]:
-            fout.write('%s\t%s\n' % (mid, 'ORG'))
-        elif mid in fb_type_mids[5]:
-            fout.write('%s\t%s\n' % (mid, 'LOC'))
-        elif mid in fb_type_mids[6]:
-            fout.write('%s\t%s\n' % (mid, 'FAC'))
-        else:
-            print mid, 'not found'
-    fout.close()
 
 
 def main():
@@ -255,7 +301,11 @@ def main():
     # __gen_predicates()
     # fliter_predicates()
     # predicates_insight()
-    __fb_types_to_entity_types()
+
+    # __filter_fb_names()
+    __gen_fb_en_names()
+
+    # __fb_types_to_tac_types()
 
 if __name__ == '__main__':
     main()
