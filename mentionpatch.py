@@ -4,18 +4,9 @@ from itertools import izip
 
 from mention import Mention
 from doctext import doc_id_from_path, next_doc_text_blocks
-from utils import match_raw_text, next_ner_result
+from utils import match_raw_text, next_ner_result, load_doc_paths
 
 doc_head = '<?xml version="1.0" encoding="utf-8"?>\n'
-
-
-def __load_doc_paths(doc_list_file):
-    paths = list()
-    f = open(doc_list_file, 'r')
-    for line in f:
-        paths.append(line[:-1])
-    f.close()
-    return paths
 
 
 def __find_post_authors(text):
@@ -69,16 +60,23 @@ def __find_nw_author(docid, doc_file_text):
     if not m:
         return None
 
-    # TODO multiple authors
-    mention = Mention(name=m.group(1), beg_pos=m.span(1)[0], end_pos=m.span(1)[1] - 1, docid=docid,
-                      mention_type='NAM', entity_type='PER-PA')
-    return [mention]
+    mentions = list()
+    # print m.group(1)
+    authors = re.split(',\s*', m.group(1))
+    for author in authors:
+        # print author
+        beg_pos = m.group(1).index(author) + m.span(1)[0]
+        end_pos = beg_pos + len(author) - 1
+        mention = Mention(name=author, beg_pos=beg_pos, end_pos=end_pos, docid=docid,
+                          mention_type='NAM', entity_type='PER-PA')
+        mentions.append(mention)
+    return mentions
 
 
 def __extract_post_author_mentions(doc_list_file, text_file, dst_post_authors_file):
     f_text = open(text_file, 'r')
     fout = open(dst_post_authors_file, 'wb')
-    doc_paths = __load_doc_paths(doc_list_file)
+    doc_paths = load_doc_paths(doc_list_file)
     for i, doc_path in enumerate(doc_paths):
         docid_text, texts, text_spans = next_doc_text_blocks(f_text)
 
@@ -92,7 +90,7 @@ def __extract_post_author_mentions(doc_list_file, text_file, dst_post_authors_fi
         if doc_file_text.startswith(doc_head):
             doc_file_text = doc_file_text[len(doc_head):]
 
-        if '_DF_' in doc_path or 'discussion_forum' or 'df' in doc_path:
+        if '_DF_' in doc_path or 'discussion_forum' in doc_path or 'df' in doc_path:
             mentions = __find_post_authors_in_doc(docid, doc_file_text, texts, text_spans)
         else:
             mentions = __find_nw_author(docid, doc_file_text)
@@ -197,23 +195,6 @@ def __extract_name_dict_mentions(name_alias_file, text_file, words_file, dst_adj
     fout.close()
 
 
-# TODO remove
-def __load_mentions_file(mention_file):
-    mentions_of_docs = dict()
-    f = open(mention_file, 'r')
-    for line in f:
-        vals = line[:-1].split('\t')
-        m = Mention(name=vals[0].decode('utf-8'), docid=vals[1],
-                    beg_pos=int(vals[2]), end_pos=int(vals[3]), entity_type=vals[4],
-                    mention_type=vals[5])
-        cur_doc_mentions = mentions_of_docs.get(vals[1], list())
-        if not cur_doc_mentions:
-            mentions_of_docs[vals[1]] = cur_doc_mentions
-        cur_doc_mentions.append(m)
-    f.close()
-    return mentions_of_docs
-
-
 def __match_name_in_text(name, text):
     match_spans = list()
     miter = re.finditer(re.escape(name), text)
@@ -278,7 +259,7 @@ def __mention_expand(text_file, mention_file, dst_extra_mentions_file):
             #                                          m.entity_type, m.mention_type))
 
         cnt += 1
-        if cnt % 10 == 0:
+        if cnt % 100 == 0:
             print cnt, docid
     f_text.close()
     fout.close()
@@ -289,6 +270,8 @@ def main():
     # dataset = 'LDC2015E103'
     dataset = 'LDC2016E63'
 
+    ner_tag = '0'
+
     # datadir = '/home/dhl/data/EDL/'
     datadir = 'e:/data/edl'
 
@@ -297,16 +280,16 @@ def main():
     doc_list_file = os.path.join(datadir, dataset, 'data/eng-docs-list-win.txt')
     text_file = os.path.join(datadir, dataset, 'data/doc-text.txt')
     words_file = os.path.join(datadir, dataset, 'output/ner-result1.txt')
-    ner_mentions_file = os.path.join(datadir, dataset, 'output/ner-mentions.tab')
+    ner_mentions_file = os.path.join(datadir, dataset, 'output/ner-mentions-%s.tab' % ner_tag)
     dst_post_authors_file = os.path.join(datadir, dataset, 'output/post-authors.tab')
     dst_name_dict_mentions_file = os.path.join(datadir, dataset, 'output/name-dict-mentions.tab')
-    dst_extra_mentions_file = os.path.join(datadir, dataset, 'output/ner-expanded.tab')
+    dst_extra_mentions_file = os.path.join(datadir, dataset, 'output/ner-expanded-%s.tab' % ner_tag)
 
     print 'extract post authors'
-    __extract_post_author_mentions(doc_list_file, text_file, dst_post_authors_file)
+    # __extract_post_author_mentions(doc_list_file, text_file, dst_post_authors_file)
 
     print 'extract names in dict'
-    __extract_name_dict_mentions(name_alias_file, text_file, words_file, dst_name_dict_mentions_file)
+    # __extract_name_dict_mentions(name_alias_file, text_file, words_file, dst_name_dict_mentions_file)
 
     print 'expand mentions'
     __mention_expand(text_file, ner_mentions_file, dst_extra_mentions_file)

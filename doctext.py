@@ -201,6 +201,7 @@ def __in_text_process(prev_text_file, dst_text_file, keep_web_addr=True, split_b
             cur_text = cur_text.replace('&lt;', '<')
             cur_text = cur_text.replace('&gt;', '>')
             cur_text = cur_text.replace('>', '> ')
+            cur_text = re.sub('\n\n+', '.\n', cur_text)
             soup = BeautifulSoup(cur_text, 'html.parser')
             cur_text = soup.get_text()
             if not keep_web_addr:
@@ -219,17 +220,17 @@ def __in_text_process(prev_text_file, dst_text_file, keep_web_addr=True, split_b
 def main():
     dataset = 'LDC2015E75'
     dataset = 'LDC2015E103'
-    # dataset = 'LDC2016E63'
+    dataset = 'LDC2016E63'
 
-    datadir = '/home/dhl/data/EDL'
-    # datadir = 'e:/data/edl'
+    # datadir = '/home/dhl/data/EDL'
+    datadir = 'e:/data/edl'
 
     doc_list_file = os.path.join(datadir, dataset, 'data/eng-docs-list.txt')
     dst_text_file0 = os.path.join(datadir, dataset, 'data/doc-text.txt')
-    dst_text_file1 = os.path.join(datadir, dataset, 'data/doc-text-clean.txt')
+    dst_text_file1 = os.path.join(datadir, dataset, 'data/doc-text-clean-new.txt')
 
-    __extract_text_from_docs(doc_list_file, dst_text_file0)
-    # __in_text_process(dst_text_file0, dst_text_file1, False, True)
+    # __extract_text_from_docs(doc_list_file, dst_text_file0)
+    __in_text_process(dst_text_file0, dst_text_file1, False, True)
 
 if __name__ == '__main__':
     main()

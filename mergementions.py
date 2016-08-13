@@ -30,29 +30,30 @@ def __merge_mentions(mention_file_list, dst_result_file):
 
 
 def main():
-    dataset = 'LDC2015E75'
+    # dataset = 'LDC2015E75'
     # dataset = 'LDC2015E103'
-    # dataset = 'LDC2016E63'
+    dataset = 'LDC2016E63'
+
+    ner_tag = '0'
 
     # datadir = '/home/dhl/data/EDL/'
     datadir = 'e:/data/edl'
 
-    ner_mentions_file = os.path.join(datadir, dataset, 'output/ner-mentions.tab')
-    extra_ner_mentions_file = os.path.join(datadir, dataset, 'output/out_25.tab')
+    ner_mentions_file = os.path.join(datadir, dataset, 'output/ner-mentions-%s.tab' % ner_tag)
     name_dict_mentions_file = os.path.join(datadir, dataset, 'output/name-dict-mentions.tab')
     post_author_file = os.path.join(datadir, dataset, 'output/post-authors.tab')
-    extra_mentions_file = os.path.join(datadir, dataset, 'output/ner-expanded.tab')
+    extra_mentions_file = os.path.join(datadir, dataset, 'output/ner-expanded-%s.tab' % ner_tag)
     nom_mentions_file = os.path.join(datadir, dataset, 'output/nom-mentions.tab')
-    all_mentions_tac_edl_file = os.path.join(datadir, dataset, 'output/all-mentions.tab')
-    all_mentions_tac_edl_file = os.path.join(datadir, dataset, 'output/ner-mentions-m.tab')
+    all_mentions_tac_edl_file = os.path.join(datadir, dataset, 'output/all-mentions-%s.tab' % ner_tag)
+    # all_mentions_tac_edl_file = os.path.join(datadir, dataset, 'output/ner-mentions-m.tab')
     # all_mentions_tac_edl_file = os.path.join(datadir, dataset, 'output/nom-mentions.tab')
 
     # __merge_mentions([name_dict_mentions_file, ner_mentions_file, post_author_file,
     #                   extra_mentions_file], all_mentions_tac_edl_file)
     # __merge_mentions([extra_ner_mentions_file, ner_mentions_file], all_mentions_tac_edl_file)
-    __merge_mentions([ner_mentions_file, extra_ner_mentions_file], all_mentions_tac_edl_file)
-    # __merge_mentions([post_author_file, name_dict_mentions_file, nom_mentions_file, ner_mentions_file,
-    #                   extra_mentions_file], all_mentions_tac_edl_file)
+    # __merge_mentions([ner_mentions_file], all_mentions_tac_edl_file)
+    __merge_mentions([post_author_file, name_dict_mentions_file, nom_mentions_file, ner_mentions_file,
+                      extra_mentions_file], all_mentions_tac_edl_file)
 
 if __name__ == '__main__':
     main()

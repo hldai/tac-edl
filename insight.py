@@ -139,12 +139,33 @@ def __missing_docs_in_edl_file():
     f.close()
 
 
+def __compare_mentions():
+    datadir = 'e:/data/edl'
+    edl_file0 = '%s/LDC2016E63/output/ner-mentions-0.tab' % datadir
+    edl_file1 = '%s/LDC2016E63/output/ner-mentions-1.tab' % datadir
+    mentions0 = Mention.load_edl_file(edl_file0, True)
+    mentions1 = Mention.load_edl_file(edl_file1, True)
+
+    for docid, doc_mentions1 in mentions1.iteritems():
+        print docid
+        doc_mentions0 = mentions0.get(docid, list())
+        for m1 in doc_mentions1:
+            found = False
+            for m0 in doc_mentions0:
+                if m0.beg_pos == m1.beg_pos and m0.end_pos == m1.end_pos:
+                    found = True
+                    break
+            if not found:
+                print '\t%s\t%d\t%d' % (m1.name, m1.beg_pos, m1.end_pos)
+
+
 def main():
     # __get_type_map()
     # __gold_mention_insight()
     # __check_mention_fb_types()
     # __type_eval()
     # __missing_docs_in_edl_file()
+    __compare_mentions()
     pass
 
 if __name__ == '__main__':

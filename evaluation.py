@@ -148,8 +148,8 @@ def __find_type_errors(gold_edl_file, sys_edl_file):
 
 
 def main():
-    dataset = 'LDC2015E75'
-    # dataset = 'LDC2015E103'
+    # dataset = 'LDC2015E75'
+    dataset = 'LDC2015E103'
     # dataset = 'LDC2016E63'
     require_type_match = True
     require_kbid_match = True
@@ -158,7 +158,7 @@ def main():
     data_dir = 'e:/data/edl'
 
     gold_edl_file = os.path.join(data_dir, dataset, 'data/gold-eng-mentions.tab')
-    sys_ed_file = os.path.join(data_dir, dataset, 'output/all-mentions.tab')
+    sys_ed_file = os.path.join(data_dir, dataset, 'output/all-mentions-0.tab')
     # sys_ed_file = os.path.join(data_dir, dataset, 'output/ner-mentions-m.tab')
     # sys_ed_file = os.path.join(data_dir, dataset, 'output/out_25.tab')
     # sys_edl_file = os.path.join(data_dir, dataset, 'output/sys-link-sm.tab')

@@ -26,7 +26,10 @@ def __get_mentions(docid, text_orig, text_new, text_pos, words, tags):
 
     def __add_mention():
         mention_name = text_orig[beg_pos:end_pos].replace('\n', ' ')
-        if '&lt;' in mention_name or 'http:' in mention_name or '&gt;' in mention_name:
+        # if docid == 'NYT_ENG_20130426.0196':
+        #     print mention_name
+        if '&lt;' in mention_name or 'http:' in mention_name or '&gt;' in mention_name or '\t' in mention_name\
+                or '<' in mention_name or '>' in mention_name:
             return
         m = Mention(name=mention_name, beg_pos=text_pos + beg_pos, end_pos=text_pos + end_pos - 1,
                     docid=docid, entity_type=prev_tag, mention_type='NAM')
@@ -79,8 +82,14 @@ def __arrange_ner_result(doc_text_file, ner_file0, ner_file1, dst_tac_edl_file):
         mentions = list()
         for text, span in izip(texts, spans):
             text_new = text.replace('al-', 'Al-')
+            text_new = re.sub('\n(\n+)', '.\g<1>', text_new)
             words, tags = next_ner_result(f_ner0)
-            mentions = __get_mentions(docid, text, text_new, span[0], words, tags)
+            # if docid == 'NYT_ENG_20130426.0196':
+            #     print
+            #     print text
+            #     print words
+            #     print tags
+            mentions += __get_mentions(docid, text, text_new, span[0], words, tags)
 
             text_new = re.sub('[/-]', ' ', text_new)
             words, tags = next_ner_result(f_ner1)
@@ -101,18 +110,39 @@ def __arrange_ner_result(doc_text_file, ner_file0, ner_file1, dst_tac_edl_file):
     fout.close()
 
 
+def __remove_leading_the(metions_file, dst_mentions_edl_file):
+    mentions = Mention.load_edl_file(metions_file)
+    for m in mentions:
+        if m.name.startswith('the '):
+            m.name = m.name[4:]
+            m.beg_pos += 4
+
+    Mention.save_as_edl_file(mentions, dst_mentions_edl_file)
+
+
+# def __arrange_stanford_ner(doc_text_file, ner_result_file0, ner_result_file1, dst_mention_file):
+
+
 def main():
     # dataset = 'LDC2015E75'
-    # dataset = 'LDC2015E103'
-    dataset = 'LDC2016E63'
-    datadir = '/home/dhl/data/EDL/'
+    dataset = 'LDC2015E103'
+    # dataset = 'LDC2016E63'
+    # datadir = '/home/dhl/data/EDL/'
+    datadir = 'e:/data/edl/'
 
     doc_text_file = os.path.join(datadir, dataset, 'data/doc-text.txt')
     ner_result_file0 = os.path.join(datadir, dataset, 'output/ner-result0.txt')
     ner_result_file1 = os.path.join(datadir, dataset, 'output/ner-result1.txt')
-    dst_mention_file = os.path.join(datadir, dataset, 'output/ner-mentions.tab')
+    mentions_edl_file = os.path.join(datadir, dataset, 'output/stanford-ner-mentions.tab')
 
-    __arrange_ner_result(doc_text_file, ner_result_file0, ner_result_file1, dst_mention_file)
+    __arrange_ner_result(doc_text_file, ner_result_file0, ner_result_file1, mentions_edl_file)
+
+    dst_mentions_edl_file = os.path.join(datadir, dataset, 'output/ner-mentions-0.tab')
+    __remove_leading_the(mentions_edl_file, dst_mentions_edl_file)
+
+    # zner_edl_file = os.path.join(datadir, dataset, 'output/zhang-ner-mentions.tab')
+    # dst_zner_edl_file = os.path.join(datadir, dataset, 'output/ner-mentions-1.tab')
+    # __remove_leading_the(zner_edl_file, dst_zner_edl_file)
 
 if __name__ == '__main__':
     main()

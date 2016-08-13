@@ -3,8 +3,8 @@ import gzip
 
 def __get_mid_name():
     datadir = 'e:/data/edl'
-    fb_name_file = '%s/tmpres/freebase/full_freebase_name_en.txt' % datadir
-    kbid = '02189'
+    fb_name_file = '%s/tmpres/freebase/fb-en-names.txt' % datadir
+    kbid = '026zr13'
 
     beg_str = '%s\t' % kbid
     # fin = gzip.open(fb_name_file)

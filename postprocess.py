@@ -3,6 +3,7 @@ from itertools import izip
 
 from mention import Mention
 from nomdiscover import load_nom_dict
+from utils import load_doc_paths, doc_id_from_path, read_text
 
 
 def __group_mentions_by_kbid(mentions):
@@ -98,6 +99,32 @@ def __fix_entity_types_by_mid(mid_type_file, mentions):
                 m.entity_type = sys_type
 
 
+def __is_normal_name(author_name):
+    for ch in author_name:
+        if ch != '?':
+            return True
+    return False
+
+
+def __nil_author_clustering(mentions):
+    author_mentions_dict = dict()
+    for m in mentions:
+        if m.entity_type == 'PER-PA':
+            cur_author_mentions = author_mentions_dict.get(m.name, list())
+            if not cur_author_mentions:
+                author_mentions_dict[m.name] = cur_author_mentions
+            cur_author_mentions.append(m)
+
+    for author_name, author_mentions in author_mentions_dict.iteritems():
+        kbid = author_mentions[0].kbid
+        # print author_name, kbid
+        # for m in author_mentions:
+        #     print m.docid,
+        # print
+        for m in author_mentions:
+            m.kbid = kbid
+
+
 def __fix_special_types(mentions):
     for m in mentions:
         if m.entity_type.startswith('PER'):
@@ -124,30 +151,70 @@ def __fix_type_diff_of_same_kbid(mentions):
             m.entity_type = major_type
 
 
-def __validate_output():
-    print 'TODO'
+def __validate_mentions(doc_list_file, mentions, dst_miss_match_file):
+    print 'checking miss match'
+    doc_mentions = Mention.arrange_mentions_by_docid(mentions)
+    doc_paths = load_doc_paths(doc_list_file)
+    doc_head = '<?xml version="1.0" encoding="utf-8"?>\n'
+    miss_match_cnt = 0
+    fout = open(dst_miss_match_file, 'wb')
+    for doc_path in doc_paths:
+        docid = doc_id_from_path(doc_path)
+        cur_doc_mentions = doc_mentions.get(docid, list())
+        if not cur_doc_mentions:
+            continue
+
+        doc_text = read_text(doc_path, True)
+        if doc_text.startswith(doc_head):
+            doc_text = doc_text[len(doc_head):]
+
+        for m in cur_doc_mentions:
+            name_in_doc = doc_text[m.beg_pos:m.end_pos + 1]
+            if name_in_doc != m.name:
+                miss_match_cnt += 1
+                fout.write('%s\t%s\t%d\t%d\t%s\n' % (docid, m.name.encode('utf-8'), m.beg_pos, m.end_pos,
+                                                     name_in_doc.encode('utf-8')))
+                # print '%s\t%s\t%d\t%d\t%s' % (docid, m.name, m.beg_pos, m.end_pos, name_in_doc)
+    fout.close()
+    print miss_match_cnt, 'miss match'
+
+
+def __fix_pos_error(mentions):
+    cnt = 0
+    for i in xrange(len(mentions) - 1, -1, -1):
+        if mentions[i].beg_pos > mentions[i].end_pos:
+            cnt += 1
+            del mentions[i]
+    print '%d pos errors' % cnt
 
 
 def main():
-    # dataset = 'LDC2015E75'
+    dataset = 'LDC2015E75'
     # dataset = 'LDC2015E103'
-    dataset = 'LDC2016E63'
+    # dataset = 'LDC2016E63'
+    mentions_tag = '0'
+    run_id = 1
 
     # datadir = '/home/dhl/data/EDL/'
     datadir = 'e:/data/edl'
 
+    doc_list_file = os.path.join(datadir, dataset, 'data/eng-docs-list-win.txt')
     mid_type_file = os.path.join(datadir, 'res/freebase/mid-entity-type.txt')
-    cur_edl_file = os.path.join(datadir, dataset, 'output/sys-link-sm.tab')
-    new_edl_file = os.path.join(datadir, dataset, 'output/sys-link-sm-pp-ft.tab')
+    cur_edl_file = os.path.join(datadir, dataset, 'output/sys-link-sm-%s.tab' % mentions_tag)
+    miss_match_mentions_file = os.path.join(datadir, dataset, 'output/miss-match-mentions-%s.txt' % mentions_tag)
+    new_edl_file = os.path.join(datadir, dataset, 'output/sys-link-sm-pp-ft-%s.tab' % mentions_tag)
     # __nil_clustering(nom_dict_file, edl_file, dst_file)
     mentions = Mention.load_edl_file(cur_edl_file)
 
     # __link_nom(doc_mentions_dict, max_nil_id)
+
+    __nil_author_clustering(mentions)
     __fix_special_types(mentions)
     __fix_type_diff_of_same_kbid(mentions)
     __fix_entity_types_by_mid(mid_type_file, mentions)
-    Mention.save_as_edl_file(mentions, new_edl_file, runid='WednesdayGo2')
-    __validate_output()
+    __validate_mentions(doc_list_file, mentions, miss_match_mentions_file)
+    # __fix_pos_error(mentions)
+    Mention.save_as_edl_file(mentions, new_edl_file, runid='WednesdayGo%d' % run_id)
 
 if __name__ == '__main__':
     main()

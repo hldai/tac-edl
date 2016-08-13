@@ -45,17 +45,21 @@ class Mention:
         mentions = list()
         f = open(filename, 'r')
         for line in f:
-            vals = line[:-1].split('\t')
-            pos_vals = vals[3].split(':')
-            pos_in_doc_vals = pos_vals[1].split('-')
-            m = Mention(name=vals[2].decode('utf-8'), beg_pos=int(pos_in_doc_vals[0]), end_pos=int(pos_in_doc_vals[1]),
-                        docid=pos_vals[0], mention_type=vals[6], entity_type=vals[5], kbid=vals[4], mention_id=vals[1])
-            # if m.name.startswith('the '):
-            #     m.name = m.name[4:]
-            #     m.beg_pos += 4
-            mentions.append(m)
-            # mentions.append((vals[1], vals[2], pos_vals[0], int(pos_in_doc_vals[0]),
-            #                  int(pos_in_doc_vals[1]), vals[4], vals[5], vals[6]))
+            # print line,
+            try:
+                vals = line[:-1].split('\t')
+                pos_vals = vals[3].split(':')
+                pos_in_doc_vals = pos_vals[1].split('-')
+                m = Mention(name=vals[2].decode('utf-8'), beg_pos=int(pos_in_doc_vals[0]), end_pos=int(pos_in_doc_vals[1]),
+                            docid=pos_vals[0], mention_type=vals[6], entity_type=vals[5], kbid=vals[4], mention_id=vals[1])
+                # if m.name.startswith('the '):
+                #     m.name = m.name[4:]
+                #     m.beg_pos += 4
+                mentions.append(m)
+            except:
+                print 'error reading mentions'
+                print line,
+                exit()
         f.close()
 
         if arrange_by_docid:

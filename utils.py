@@ -1,3 +1,12 @@
+def load_doc_paths(doc_list_file):
+    paths = list()
+    f = open(doc_list_file, 'r')
+    for line in f:
+        paths.append(line[:-1])
+    f.close()
+    return paths
+
+
 def doc_id_from_path(doc_path):
     doc_id = ''
     last_slash = doc_path.rfind('/')
@@ -70,10 +79,13 @@ def match_raw_text(text, words):
 #     return text.decode('utf-8')
 
 
-def read_text(filename):
+def read_text(filename, decode_as_utf8=False):
     f = open(filename, 'r')
     text = f.read()
     f.close()
+
+    if decode_as_utf8:
+        text = text.decode('utf-8')
     return text
 
 
