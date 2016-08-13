@@ -284,14 +284,21 @@ def __filter_fb_names():
 def __gen_fb_en_names():
     datadir = 'e:/data/edl'
     fb_names_file = '%s/tmpres/freebase/freebase-names.gz' % datadir
+    dst_file = '%s/tmpres/freebase/fb-en-names.txt' % datadir
+
     fin = gzip.open(fb_names_file, 'r')
+    fout = open(dst_file, 'wb')
     for i, line in enumerate(fin):
         if line.endswith('@en\n'):
-            print line
-            break
+            vals = line[:-1].split('\t')
+            name = vals[1][1:-4].lower()
+            assert '\t' not in name
+            fout.write('%s\t%s\n' % (vals[0], name))
+            # break
         if (i + 1) % 10000000 == 0:
             print i + 1
     fin.close()
+    fout.close()
 
 
 def main():
@@ -303,9 +310,10 @@ def main():
     # predicates_insight()
 
     # __filter_fb_names()
-    __gen_fb_en_names()
+    # __gen_fb_en_names()
 
     # __fb_types_to_tac_types()
+    pass
 
 if __name__ == '__main__':
     main()

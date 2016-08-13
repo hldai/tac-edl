@@ -34,7 +34,18 @@ def __find_entity_types():
     f.close()
 
 
+def __find_text():
+    fbfile = 'e:/common-res/freebase-rdf-latest.gz'
+    text_val = 'http://rdf.freebase.com/ns/m.026m5c8'
+    f = gzip.open(fbfile, 'rb')
+    for line in f:
+        if text_val in line:
+            print line,
+    f.close()
+
+
 def main():
+    # __find_text()
     __get_mid_name()
     # __find_entity_types()
     pass
