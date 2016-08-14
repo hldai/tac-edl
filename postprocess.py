@@ -189,11 +189,11 @@ def __fix_pos_error(mentions):
 
 
 def main():
-    dataset = 'LDC2015E75'
+    # dataset = 'LDC2015E75'
     # dataset = 'LDC2015E103'
-    # dataset = 'LDC2016E63'
+    dataset = 'LDC2016E63'
     mentions_tag = '0'
-    run_id = 1
+    run_id = 5
 
     # datadir = '/home/dhl/data/EDL/'
     datadir = 'e:/data/edl'
@@ -202,7 +202,7 @@ def main():
     mid_type_file = os.path.join(datadir, 'res/freebase/mid-entity-type.txt')
     cur_edl_file = os.path.join(datadir, dataset, 'output/sys-link-sm-%s.tab' % mentions_tag)
     miss_match_mentions_file = os.path.join(datadir, dataset, 'output/miss-match-mentions-%s.txt' % mentions_tag)
-    new_edl_file = os.path.join(datadir, dataset, 'output/sys-link-sm-pp-ft-%s.tab' % mentions_tag)
+    new_edl_file = os.path.join(datadir, dataset, 'output/sys-link-sm-pp-ft-%d.tab' % run_id)
     # __nil_clustering(nom_dict_file, edl_file, dst_file)
     mentions = Mention.load_edl_file(cur_edl_file)
 
@@ -210,8 +210,8 @@ def main():
 
     __nil_author_clustering(mentions)
     __fix_special_types(mentions)
-    __fix_type_diff_of_same_kbid(mentions)
-    __fix_entity_types_by_mid(mid_type_file, mentions)
+    # __fix_type_diff_of_same_kbid(mentions)
+    # __fix_entity_types_by_mid(mid_type_file, mentions)
     __validate_mentions(doc_list_file, mentions, miss_match_mentions_file)
     # __fix_pos_error(mentions)
     Mention.save_as_edl_file(mentions, new_edl_file, runid='WednesdayGo%d' % run_id)
