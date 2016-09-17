@@ -158,11 +158,11 @@ def main():
     data_dir = 'e:/data/edl'
 
     gold_edl_file = os.path.join(data_dir, dataset, 'data/gold-eng-mentions.tab')
-    sys_ed_file = os.path.join(data_dir, dataset, 'output/all-mentions-0.tab')
+    # sys_ed_file = os.path.join(data_dir, dataset, 'output/all-mentions-0.tab')
     # sys_ed_file = os.path.join(data_dir, dataset, 'output/ner-mentions-m.tab')
-    # sys_ed_file = os.path.join(data_dir, dataset, 'output/out_25.tab')
-    # sys_edl_file = os.path.join(data_dir, dataset, 'output/sys-link-sm.tab')
-    sys_edl_file = os.path.join(data_dir, dataset, 'output/sys-link-sm-pp-ft.tab')
+    sys_ed_file = os.path.join(data_dir, dataset, 'output/sys-link-sm-pp-ft-1.tab')
+    # sys_edl_file = os.path.join(data_dir, dataset, 'output/sys-link-sm-0.tab')
+    sys_edl_file = os.path.join(data_dir, dataset, 'output/sys-link-sm-pp-ft-1.tab')
     false_pos_file = os.path.join(data_dir, dataset, 'error/fp.txt')
     false_neg_file = os.path.join(data_dir, dataset, 'error/fn.txt')
     link_error_file = os.path.join(data_dir, dataset, 'error/link-error.txt')

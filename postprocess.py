@@ -190,10 +190,10 @@ def __fix_pos_error(mentions):
 
 def main():
     # dataset = 'LDC2015E75'
-    # dataset = 'LDC2015E103'
-    dataset = 'LDC2016E63'
+    dataset = 'LDC2015E103'
+    # dataset = 'LDC2016E63'
     mentions_tag = '0'
-    run_id = 5
+    run_id = 1
 
     # datadir = '/home/dhl/data/EDL/'
     datadir = 'e:/data/edl'
@@ -211,7 +211,7 @@ def main():
     __nil_author_clustering(mentions)
     __fix_special_types(mentions)
     # __fix_type_diff_of_same_kbid(mentions)
-    # __fix_entity_types_by_mid(mid_type_file, mentions)
+    __fix_entity_types_by_mid(mid_type_file, mentions)
     __validate_mentions(doc_list_file, mentions, miss_match_mentions_file)
     # __fix_pos_error(mentions)
     Mention.save_as_edl_file(mentions, new_edl_file, runid='WednesdayGo%d' % run_id)

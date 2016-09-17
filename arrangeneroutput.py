@@ -17,6 +17,56 @@ def __fix_entity_types(mentions):
             m.entity_type = 'GPE'
 
 
+# split by \n+, return spans
+def __split_mention_name(mention_name):
+    beg_pos = 0
+    end_pos = 1
+    name_len = len(mention_name)
+    tmp_spans = list()
+    while beg_pos < name_len:
+        while end_pos < name_len and mention_name[end_pos] != '\n':
+            end_pos += 1
+        tmp_spans.append((beg_pos, end_pos - 1))
+
+        beg_pos = end_pos
+        while beg_pos < name_len and mention_name[beg_pos] == '\n':
+            beg_pos += 1
+        end_pos = beg_pos + 1
+
+    mention_spans = list()
+    for sp in tmp_spans:
+        beg_pos, end_pos = sp
+        while beg_pos <= end_pos and mention_name[beg_pos].isspace():
+            beg_pos += 1
+        while end_pos >= beg_pos and mention_name[end_pos].isspace():
+            end_pos -= 1
+        if end_pos >= beg_pos:
+            mention_spans.append((beg_pos, end_pos))
+    return mention_spans
+
+
+def __handle_mention(docid, text_orig, text_pos, beg_pos, end_pos, mention_type, dst_mentions):
+    tmp_mention_name = text_orig[beg_pos:end_pos]
+
+    if '&lt;' in tmp_mention_name or 'http:' in tmp_mention_name or '&gt;' in tmp_mention_name \
+            or '\t' in tmp_mention_name or '<' in tmp_mention_name or '>' in tmp_mention_name:
+        return
+
+    num_nls = tmp_mention_name.count('\n')
+    if num_nls == 0:
+        m = Mention(name=tmp_mention_name, beg_pos=text_pos + beg_pos, end_pos=text_pos + end_pos - 1,
+                    docid=docid, entity_type=mention_type, mention_type='NAM')
+        dst_mentions.append(m)
+    elif num_nls == 1:
+        if beg_pos > 0 and text_orig[beg_pos - 1] == '\n':
+            print 'split'  # TODO
+        else:
+            tmp_mention_name = tmp_mention_name.replace('\n', ' ')
+            m = Mention(name=tmp_mention_name, beg_pos=text_pos + beg_pos, end_pos=text_pos + end_pos - 1,
+                        docid=docid, entity_type=mention_type, mention_type='NAM')
+            dst_mentions.append(m)
+
+
 def __get_mentions(docid, text_orig, text_new, text_pos, words, tags):
     word_span_list = match_raw_text(text_new, words)
 
@@ -118,9 +168,6 @@ def __remove_leading_the(metions_file, dst_mentions_edl_file):
             m.beg_pos += 4
 
     Mention.save_as_edl_file(mentions, dst_mentions_edl_file)
-
-
-# def __arrange_stanford_ner(doc_text_file, ner_result_file0, ner_result_file1, dst_mention_file):
 
 
 def main():

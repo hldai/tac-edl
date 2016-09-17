@@ -55,6 +55,7 @@ def __find_post_authors_in_doc(docid, doc_file_text, text_blocks, text_spans):
     return pa_mentions
 
 
+# TODO mentions in text
 def __find_nw_author(docid, doc_file_text):
     m = re.search('<AUTHOR>\s*(.*?)\s*</AUTHOR>', doc_file_text)
     if not m:
@@ -173,6 +174,7 @@ def __extract_name_dict_mentions(name_alias_file, text_file, words_file, dst_adj
         for text, span in izip(texts, spans):
             text_new = text.replace('al-', 'Al-')
             text_new = re.sub('[/-]', ' ', text_new)
+            text_new = text_new.replace('\n\n', '.\n')
             words, tags = next_ner_result(fin1)
 
             pos_spans = match_raw_text(text_new, words)
@@ -267,8 +269,8 @@ def __mention_expand(text_file, mention_file, dst_extra_mentions_file):
 
 def main():
     # dataset = 'LDC2015E75'
-    # dataset = 'LDC2015E103'
-    dataset = 'LDC2016E63'
+    dataset = 'LDC2015E103'
+    # dataset = 'LDC2016E63'
 
     ner_tag = '0'
 
@@ -289,10 +291,10 @@ def main():
     # __extract_post_author_mentions(doc_list_file, text_file, dst_post_authors_file)
 
     print 'extract names in dict'
-    # __extract_name_dict_mentions(name_alias_file, text_file, words_file, dst_name_dict_mentions_file)
+    __extract_name_dict_mentions(name_alias_file, text_file, words_file, dst_name_dict_mentions_file)
 
     print 'expand mentions'
-    __mention_expand(text_file, ner_mentions_file, dst_extra_mentions_file)
+    # __mention_expand(text_file, ner_mentions_file, dst_extra_mentions_file)
 
 
 if __name__ == '__main__':

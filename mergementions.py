@@ -31,8 +31,8 @@ def __merge_mentions(mention_file_list, dst_result_file):
 
 def main():
     # dataset = 'LDC2015E75'
-    # dataset = 'LDC2015E103'
-    dataset = 'LDC2016E63'
+    dataset = 'LDC2015E103'
+    # dataset = 'LDC2016E63'
 
     ner_tag = '0'
 

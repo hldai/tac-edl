@@ -218,8 +218,8 @@ def __in_text_process(prev_text_file, dst_text_file, keep_web_addr=True, split_b
 
 
 def main():
-    dataset = 'LDC2015E75'
-    dataset = 'LDC2015E103'
+    # dataset = 'LDC2015E75'
+    # dataset = 'LDC2015E103'
     dataset = 'LDC2016E63'
 
     # datadir = '/home/dhl/data/EDL'
@@ -229,7 +229,7 @@ def main():
     dst_text_file0 = os.path.join(datadir, dataset, 'data/doc-text.txt')
     dst_text_file1 = os.path.join(datadir, dataset, 'data/doc-text-clean-new.txt')
 
-    # __extract_text_from_docs(doc_list_file, dst_text_file0)
+    __extract_text_from_docs(doc_list_file, dst_text_file0)
     __in_text_process(dst_text_file0, dst_text_file1, False, True)
 
 if __name__ == '__main__':

@@ -251,8 +251,8 @@ def __extract_nom_mentions(nom_dict_file, doc_list_file, words_pos_file, dst_nom
 
 def main():
     # dataset = 'LDC2015E75'
-    # dataset = 'LDC2015E103'
-    dataset = 'LDC2016E63'
+    dataset = 'LDC2015E103'
+    # dataset = 'LDC2016E63'
 
     # datadir = '/home/dhl/data/EDL/'
     datadir = 'e:/data/edl'
