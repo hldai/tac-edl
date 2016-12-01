@@ -18,7 +18,7 @@ def __fix_entity_types(mentions):
 
 
 # split by \n+, return spans
-def __split_mention_name(mention_name):
+def __split_mention_name(mention_name, docid, mention_beg_pos, entity_type):
     beg_pos = 0
     end_pos = 1
     name_len = len(mention_name)
@@ -33,7 +33,7 @@ def __split_mention_name(mention_name):
             beg_pos += 1
         end_pos = beg_pos + 1
 
-    mention_spans = list()
+    mentions = list()
     for sp in tmp_spans:
         beg_pos, end_pos = sp
         while beg_pos <= end_pos and mention_name[beg_pos].isspace():
@@ -41,11 +41,16 @@ def __split_mention_name(mention_name):
         while end_pos >= beg_pos and mention_name[end_pos].isspace():
             end_pos -= 1
         if end_pos >= beg_pos:
-            mention_spans.append((beg_pos, end_pos))
-    return mention_spans
+            # if docid == 'ENG_DF_001503_20130716_G00A0AUYI':
+            #     print '###name:', mention_name[beg_pos:end_pos + 1]
+            m = Mention(name=mention_name[beg_pos:end_pos + 1], beg_pos=mention_beg_pos + beg_pos,
+                        end_pos=mention_beg_pos + end_pos, docid=docid, entity_type=entity_type,
+                        mention_type='NAM')
+            mentions.append(m)
+    return mentions
 
 
-def __handle_mention(docid, text_orig, text_pos, beg_pos, end_pos, mention_type, dst_mentions):
+def __handle_mention(docid, text_orig, text_pos, beg_pos, end_pos, entity_type, dst_mentions):
     tmp_mention_name = text_orig[beg_pos:end_pos]
 
     if '&lt;' in tmp_mention_name or 'http:' in tmp_mention_name or '&gt;' in tmp_mention_name \
@@ -53,18 +58,24 @@ def __handle_mention(docid, text_orig, text_pos, beg_pos, end_pos, mention_type,
         return
 
     num_nls = tmp_mention_name.count('\n')
+    # if docid == 'ENG_DF_001503_20130716_G00A0AUYI':
+    #     print num_nls, text_pos, beg_pos, end_pos, tmp_mention_name
     if num_nls == 0:
         m = Mention(name=tmp_mention_name, beg_pos=text_pos + beg_pos, end_pos=text_pos + end_pos - 1,
-                    docid=docid, entity_type=mention_type, mention_type='NAM')
+                    docid=docid, entity_type=entity_type, mention_type='NAM')
         dst_mentions.append(m)
     elif num_nls == 1:
         if beg_pos > 0 and text_orig[beg_pos - 1] == '\n':
-            print 'split'  # TODO
+            dst_mentions += __split_mention_name(tmp_mention_name, docid, text_pos + beg_pos, entity_type)
         else:
             tmp_mention_name = tmp_mention_name.replace('\n', ' ')
             m = Mention(name=tmp_mention_name, beg_pos=text_pos + beg_pos, end_pos=text_pos + end_pos - 1,
-                        docid=docid, entity_type=mention_type, mention_type='NAM')
+                        docid=docid, entity_type=entity_type, mention_type='NAM')
             dst_mentions.append(m)
+    else:
+        # if docid == 'ENG_DF_001503_20130716_G00A0AUYI':
+        #     print 'TTTTT'
+        dst_mentions += __split_mention_name(tmp_mention_name, docid, text_pos + beg_pos, entity_type)
 
 
 def __get_mentions(docid, text_orig, text_new, text_pos, words, tags):
@@ -74,16 +85,16 @@ def __get_mentions(docid, text_orig, text_new, text_pos, words, tags):
     beg_pos, end_pos = 0, 0
     mentions = list()
 
-    def __add_mention():
-        mention_name = text_orig[beg_pos:end_pos].replace('\n', ' ')
-        # if docid == 'NYT_ENG_20130426.0196':
-        #     print mention_name
-        if '&lt;' in mention_name or 'http:' in mention_name or '&gt;' in mention_name or '\t' in mention_name\
-                or '<' in mention_name or '>' in mention_name:
-            return
-        m = Mention(name=mention_name, beg_pos=text_pos + beg_pos, end_pos=text_pos + end_pos - 1,
-                    docid=docid, entity_type=prev_tag, mention_type='NAM')
-        mentions.append(m)
+    # def __add_mention():
+    #     mention_name = text_orig[beg_pos:end_pos].replace('\n', ' ')
+    #     # if docid == 'NYT_ENG_20130426.0196':
+    #     #     print mention_name
+    #     if '&lt;' in mention_name or 'http:' in mention_name or '&gt;' in mention_name or '\t' in mention_name\
+    #             or '<' in mention_name or '>' in mention_name:
+    #         return
+    #     m = Mention(name=mention_name, beg_pos=text_pos + beg_pos, end_pos=text_pos + end_pos - 1,
+    #                 docid=docid, entity_type=prev_tag, mention_type='NAM')
+    #     mentions.append(m)
 
     cur_mention_beg_idx = -1
     for i, (word, tag) in enumerate(izip(words, tags)):
@@ -91,7 +102,8 @@ def __get_mentions(docid, text_orig, text_new, text_pos, words, tags):
             if cur_mention_beg_idx != -1:
                 # print words[cur_mention_beg_idx:i], prev_tag
                 beg_pos, end_pos = word_span_list[cur_mention_beg_idx][0], word_span_list[i - 1][1]
-                __add_mention()
+                # __add_mention()
+                __handle_mention(docid, text_orig, text_pos, beg_pos, end_pos, prev_tag, mentions)
                 cur_mention_beg_idx = -1
             if tag != 'O':
                 cur_mention_beg_idx = i
@@ -99,7 +111,8 @@ def __get_mentions(docid, text_orig, text_new, text_pos, words, tags):
 
     if cur_mention_beg_idx != -1:
         beg_pos, end_pos = word_span_list[cur_mention_beg_idx][0], word_span_list[-1][1]
-        __add_mention()
+        # __add_mention()
+        __handle_mention(docid, text_orig, text_pos, beg_pos, end_pos, prev_tag, mentions)
 
     __fix_entity_types(mentions)
     return mentions
@@ -128,6 +141,9 @@ def __arrange_ner_result(doc_text_file, ner_file0, ner_file1, dst_tac_edl_file):
 
         if not docid:
             break
+
+        # if docid != 'ENG_DF_001487_20150628_F001000DV':
+        #     continue
 
         mentions = list()
         for text, span in izip(texts, spans):
@@ -180,7 +196,7 @@ def main():
     doc_text_file = os.path.join(datadir, dataset, 'data/doc-text.txt')
     ner_result_file0 = os.path.join(datadir, dataset, 'output/ner-result0.txt')
     ner_result_file1 = os.path.join(datadir, dataset, 'output/ner-result1.txt')
-    mentions_edl_file = os.path.join(datadir, dataset, 'output/stanford-ner-mentions.tab')
+    mentions_edl_file = os.path.join(datadir, dataset, 'output/ner-mentions-0-tmp.tab')
 
     __arrange_ner_result(doc_text_file, ner_result_file0, ner_result_file1, mentions_edl_file)
 

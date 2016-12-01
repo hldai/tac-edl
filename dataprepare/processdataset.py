@@ -1,6 +1,45 @@
 import os
+import re
+from mention import Mention
 
 doc_head = '<?xml version="1.0" encoding="utf-8"?>\n'
+
+xml_mention_pattern_str = '<query id=\"(.*?)\">\s*<name>(.*?)</name>\s*<docid>(.*?)</docid>\s*</query>'
+
+
+def __read_text_file(filename):
+    f = open(filename, 'r')
+    text = f.read()
+    f.close()
+    return text
+
+
+def prev_mentions_format_to_new(tab_file, xml_file, output_file):
+    xml_text = __read_text_file(xml_file)
+    miter = re.finditer(xml_mention_pattern_str, xml_text)
+    mentions_dict = dict()
+    beg_pos_dict = dict()
+    for m in miter:
+        cur_doc_id = m.group(3)
+        mention = Mention(name=m.group(2), docid=cur_doc_id, mention_id=m.group(1))
+        doc_beg = beg_pos_dict.get(cur_doc_id, 0)  # TODO
+        mention.beg_pos = doc_beg
+        mention.end_pos = doc_beg + len(mention.name.encode('utf-8')) - 1
+        beg_pos_dict[cur_doc_id] = mention.end_pos + 1
+        mentions_dict[mention.mention_id] = mention
+
+    f = open(tab_file, 'r')
+    for line in f:
+        vals = line.strip().split('\t')
+        if len(vals) < 3:
+            continue
+        m = mentions_dict.get(vals[0], None)
+        if m:
+            m.kbid = vals[1]
+            m.entity_type = vals[2]
+    f.close()
+
+    Mention.save_as_edl_file(mentions_dict.values(), output_file)
 
 
 def load_nom_mentions(edl_gold_file):
@@ -80,15 +119,20 @@ def __fix_edl_file_positions():
 
 
 def __gen_docs_list():
-    dataset = 'LDC2015E75'
+    # dataset = 'LDC2015E75'
     # dataset = 'LDC2015E103'
     # dataset = 'LDC2016E63'
 
-    # datadir = '/home/dhl/data/EDL'
-    datadir = 'e:/data/edl'
-
-    docs_dir = os.path.join(datadir, dataset, 'data/eng')
-    docs_list_file = os.path.join(datadir, dataset, 'data/eng-docs-list-win.txt')
+    # docs_dir = 'e:/data/edl'
+    # docs_dir = 'e:/data/el/LDC2015E19/data/2009/eval/source_documents'
+    # docs_list_file = 'e:/data/el/LDC2015E19/data/2009/eval/data/eng-docs-list-win.txt'
+    docs_dir = 'e:/data/el/LDC2015E19/data/2010/eval/source_documents'
+    docs_list_file = 'e:/data/el/LDC2015E19/data/2010/eval/data/eng-docs-list-win.txt'
+    # docs_dir = 'e:/data/el/LDC2015E19/data/2011/eval/source_documents'
+    # docs_list_file = 'e:/data/el/LDC2015E19/data/2011/eval/data/eng-docs-list-win.txt'
+    # docs_dir = os.path.join(datadir, 'source_documents')
+    # docs_dir = os.path.join(datadir, 'data/eng')
+    # docs_list_file = os.path.join(datadir, 'data/eng-docs-list-win.txt')
 
     dir_list = [docs_dir]
     fout = open(docs_list_file, 'wb')
@@ -106,9 +150,31 @@ def __gen_docs_list():
     fout.close()
 
 
+def __transform_mentions_file():
+    # tab_file = 'e:/data/el/LDC2015E19/data/2009/eval/' \
+    #            'tac_kbp_2009_english_entity_linking_evaluation_KB_links.tab'
+    # xml_file = 'e:/data/el/LDC2015E19/data/2009/eval/' \
+    #            'tac_kbp_2009_english_entity_linking_evaluation_queries.xml'
+    # dst_file = 'e:/data/el/LDC2015E19/data/2009/eval/data/mentions.tab'
+
+    tab_file = 'e:/data/el/LDC2015E19/data/2010/eval/' \
+               'tac_kbp_2010_english_entity_linking_evaluation_KB_links.tab'
+    xml_file = 'e:/data/el/LDC2015E19/data/2010/eval/' \
+               'tac_kbp_2010_english_entity_linking_evaluation_queries.xml'
+    dst_file = 'e:/data/el/LDC2015E19/data/2010/eval/data/mentions.tab'
+
+    # tab_file = 'e:/data/el/LDC2015E19/data/2011/eval/' \
+    #            'tac_kbp_2011_english_entity_linking_evaluation_KB_links.tab'
+    # xml_file = 'e:/data/el/LDC2015E19/data/2011/eval/' \
+    #            'tac_kbp_2011_english_entity_linking_evaluation_queries.xml'
+    # dst_file = 'e:/data/el/LDC2015E19/data/2011/eval/data/mentions.tab'
+    prev_mentions_format_to_new(tab_file, xml_file, dst_file)
+
+
 def main():
     # gen_nom_dict()
     __gen_docs_list()
+    # __transform_mentions_file()
     # __fix_edl_file_positions()
 
 if __name__ == '__main__':

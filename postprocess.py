@@ -116,6 +116,9 @@ def __nil_author_clustering(mentions):
             cur_author_mentions.append(m)
 
     for author_name, author_mentions in author_mentions_dict.iteritems():
+        # if not __is_normal_name(author_name):  # TODO test
+        #     continue
+
         kbid = author_mentions[0].kbid
         # print author_name, kbid
         # for m in author_mentions:
@@ -193,7 +196,7 @@ def main():
     dataset = 'LDC2015E103'
     # dataset = 'LDC2016E63'
     mentions_tag = '0'
-    run_id = 1
+    run_id = 4
 
     # datadir = '/home/dhl/data/EDL/'
     datadir = 'e:/data/edl'
@@ -210,10 +213,10 @@ def main():
 
     __nil_author_clustering(mentions)
     __fix_special_types(mentions)
-    # __fix_type_diff_of_same_kbid(mentions)
     __fix_entity_types_by_mid(mid_type_file, mentions)
+    # __fix_type_diff_of_same_kbid(mentions)
     __validate_mentions(doc_list_file, mentions, miss_match_mentions_file)
-    # __fix_pos_error(mentions)
+    __fix_pos_error(mentions)
     Mention.save_as_edl_file(mentions, new_edl_file, runid='WednesdayGo%d' % run_id)
 
 if __name__ == '__main__':

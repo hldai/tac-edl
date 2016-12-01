@@ -225,7 +225,7 @@ def main():
     # datadir = '/home/dhl/data/EDL'
     datadir = 'e:/data/edl'
 
-    doc_list_file = os.path.join(datadir, dataset, 'data/eng-docs-list.txt')
+    doc_list_file = os.path.join(datadir, dataset, 'data/eng-docs-list-win.txt')
     dst_text_file0 = os.path.join(datadir, dataset, 'data/doc-text.txt')
     dst_text_file1 = os.path.join(datadir, dataset, 'data/doc-text-clean-new.txt')
 

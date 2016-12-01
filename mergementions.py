@@ -34,7 +34,7 @@ def main():
     dataset = 'LDC2015E103'
     # dataset = 'LDC2016E63'
 
-    ner_tag = '0'
+    ner_tag = '1'
 
     # datadir = '/home/dhl/data/EDL/'
     datadir = 'e:/data/edl'
@@ -48,10 +48,8 @@ def main():
     # all_mentions_tac_edl_file = os.path.join(datadir, dataset, 'output/ner-mentions-m.tab')
     # all_mentions_tac_edl_file = os.path.join(datadir, dataset, 'output/nom-mentions.tab')
 
-    # __merge_mentions([name_dict_mentions_file, ner_mentions_file, post_author_file,
+    # __merge_mentions([post_author_file, name_dict_mentions_file, ner_mentions_file,
     #                   extra_mentions_file], all_mentions_tac_edl_file)
-    # __merge_mentions([extra_ner_mentions_file, ner_mentions_file], all_mentions_tac_edl_file)
-    # __merge_mentions([ner_mentions_file], all_mentions_tac_edl_file)
     __merge_mentions([post_author_file, name_dict_mentions_file, nom_mentions_file, ner_mentions_file,
                       extra_mentions_file], all_mentions_tac_edl_file)
 

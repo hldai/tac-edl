@@ -71,7 +71,7 @@ class Mention:
             runid, self.mention_id, self.name.encode('utf-8'), self.docid, self.beg_pos,
             self.end_pos, self.kbid, self.entity_type, self.mention_type))
 
-    def __init__(self, name=u'', beg_pos=-1, end_pos=-1, docid='', mention_type='',
+    def __init__(self, name=u'', beg_pos=-1, end_pos=-1, docid='', mention_type='NAM',
                  entity_type='', kbid='NIL', mention_id='TEDL_000001'):
         self.mention_id = mention_id
         self.name = name

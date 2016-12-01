@@ -272,7 +272,7 @@ def main():
     dataset = 'LDC2015E103'
     # dataset = 'LDC2016E63'
 
-    ner_tag = '0'
+    ner_tag = '1'
 
     # datadir = '/home/dhl/data/EDL/'
     datadir = 'e:/data/edl'
@@ -291,10 +291,10 @@ def main():
     # __extract_post_author_mentions(doc_list_file, text_file, dst_post_authors_file)
 
     print 'extract names in dict'
-    __extract_name_dict_mentions(name_alias_file, text_file, words_file, dst_name_dict_mentions_file)
+    # __extract_name_dict_mentions(name_alias_file, text_file, words_file, dst_name_dict_mentions_file)
 
     print 'expand mentions'
-    # __mention_expand(text_file, ner_mentions_file, dst_extra_mentions_file)
+    __mention_expand(text_file, ner_mentions_file, dst_extra_mentions_file)
 
 
 if __name__ == '__main__':
